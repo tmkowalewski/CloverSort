@@ -12,29 +12,34 @@ class Run;
 class Experiment
 {
 public:
-    Experiment(const TString name, const TString filename);
+    Experiment(const TString name, const TString file_name);
     ~Experiment();
 
-    TString getName() const;
+    // Getters
 
-    void defineFromFile(const TString &filename);
+    const TString &getName() const;
+    const DAQModule *getDAQModule(const TString module_name) const;
+    const std::vector<DAQModule> *getDAQModules() const;
+    const Run *getRun(const Int_t runNumber) const;
+    const std::vector<Run> *getRuns() const;
 
-    void addDAQModule(const DAQModule *module);
-    void removeDAQModule(const TString &moduleName);
-    const std::vector<DAQModule> getDAQModules() const;
-    DAQModule *getDAQModule(const TString &moduleName) const;
+    // Setters
 
-    void addRun(const Run *run);
-    void removeRun(const TString &runName);
+    // Methods
+    void addDAQModule(const DAQModule &module);
+    void removeDAQModule(const TString &module_name);
+    void addRun(const Run &run);
+    void removeRun(const Int_t &run_name);
 
-    std::vector<Run> getRuns() const;
-    Run *getRun(const Int_t runNumber) const;
+    void printInfo() const;
 
 private:
-    TString name_;                        // Name of the experiment, same name as the ROOT Tree MVME generates
-    TString filename_;                    // Name of the file where the experiment configuration is stored
-    std::vector<DAQModule *> daqmodules_; // List of pointers to modules associated with the experiment
-    std::vector<Run *> runs_;             // List of pointers to runs associated with the experiment
+    TString name_;                       // Name of the experiment, same name as the ROOT Tree MVME generates
+    TString file_name_;                  // Name of the file where the experiment configuration is stored
+    std::vector<DAQModule> daq_modules_; // List of pointers to modules associated with the experiment
+    std::vector<Run> runs_;              // List of pointers to runs associated with the experiment
 };
+
+std::vector<Int_t> parseNumberString(const TString &number_string);
 
 #endif // EXPERIMENT_HPP

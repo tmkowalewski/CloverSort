@@ -17,20 +17,31 @@ class Detector;
 
 class HistogramManager
 {
+    friend class Run; // Allow Run to access private members
+
 public:
-    HistogramManager() = default;
     ~HistogramManager();
 
-    std::map<Detector *, std::vector<ROOT::TThreadedObject<TH1D> *>> getHistograms() const;
+    // Getters
 
-    void addHistogram(TString name, TH1D *histogram);
-    void removeHistogram(TString name);
+    const std::map<TString, std::vector<ROOT::TThreadedObject<TH1D>>> *getHistograms() const;
 
-    void writeHistsToFile(TFile *file) const;
-    void readHistsFromFile(TFile *file);
+    // Setters
+
+    // Methods
+
+    void addHistogram(Detector detector, ROOT::TThreadedObject<TH1D> *histogram);
+    void removeHistogram(TString detector_name, TString name);
+
+    void writeHistsToFile(TFile *file);
+    // void readHistsFromFile(TFile *file);
+
+    void printInfo();
 
 private:
-    std::map<Detector *, std::vector<ROOT::TThreadedObject<TH1D> *>> histograms_; // Map to store histograms according to the Detector they belong to
+    HistogramManager(); // Private constructor to prevent instantiation without a Run context
+
+    std::map<TString, std::vector<ROOT::TThreadedObject<TH1D>>> histograms_; // Map to store histograms according to the Detector they belong to
 };
 
 #endif // HISTOGRAM_MANAGER_HPP

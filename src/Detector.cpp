@@ -1,7 +1,7 @@
 #include "Detector.hpp"
 
-Detector::Detector(TString name, TString type, DAQModule *daqModule)
-    : name_(std::move(name)), type_(std::move(type)), daqModule_(daqModule)
+Detector::Detector(TString name, TString type, std::vector<Int_t> channels)
+    : name_(name), type_(type), channels_(channels)
 {
 }
 
@@ -19,27 +19,22 @@ const TString &Detector::getType() const
     return type_;
 }
 
-const std::vector<Int_t> &Detector::getChannels() const
+const std::vector<Int_t> *Detector::getChannels() const
 {
-    return channels_;
+    return &channels_;
 }
 
-const DAQModule *Detector::getDAQModule() const
-{
-    return daqModule_;
-}
-
-void Detector::setName(const TString &name)
+void Detector::setName(const TString name)
 {
     name_ = name;
 }
 
-void Detector::setType(const TString &type)
+void Detector::setType(const TString type)
 {
     type_ = type;
 }
 
-void Detector::setChannels(const std::vector<Int_t> &channels)
+void Detector::setChannels(const std::vector<Int_t> channels)
 {
     channels_ = channels;
 }
