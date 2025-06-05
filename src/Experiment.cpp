@@ -48,13 +48,16 @@ Experiment::Experiment(const TString name, const TString file_name)
     std::ifstream config_file(file_name.Data());
     if (!config_file.is_open())
     {
-        std::cerr << "Error: Could not open configuration file: " << file_name.Data() << std::endl;
+        std::cout << "CloverSort [Error]: Could not open configuration file: " << file_name.Data() << std::endl;
         return;
     }
+
+    std::cout << "CloverSort [INFO]: Defining Experiment from configuration file " << file_name.Data() << std::endl;
 
     // Read the configuration file
     std::string line;
     std::string current_section;
+    std::string run_filename_pattern;
 
     while (std::getline(config_file, line))
     {
@@ -75,6 +78,7 @@ Experiment::Experiment(const TString name, const TString file_name)
         if (trimmed_line == "ExperimentOptions" || trimmed_line == "DAQModules" || trimmed_line == "Detectors" || trimmed_line == "Runs")
         {
             current_section = trimmed_line;
+            std::cout << "CloverSort [INFO]: Entering section " << current_section << std::endl;
             continue;
         }
         std::istringstream iss(trimmed_line);
@@ -98,7 +102,7 @@ Experiment::Experiment(const TString name, const TString file_name)
             // Other options (e.g. FilenamePattern) can be parsed similarly.
         }
         // Handle Module definitions
-        else if (current_section == "Modules")
+        else if (current_section == "DAQModules")
         {
             // Format: module_name    module_type   filters...]
             std::string module_name, module_type;
@@ -106,29 +110,27 @@ Experiment::Experiment(const TString name, const TString file_name)
                 continue;
 
             // Check if module_name is in the list of valid module names
-            if (std::find(DAQModule::VALID_MODULE_TYPES_.begin(), DAQModule::VALID_MODULE_TYPES_.end(), module_name) == DAQModule::VALID_MODULE_TYPES_.end())
+            if (std::find(DAQModule::VALID_MODULE_TYPES_.begin(), DAQModule::VALID_MODULE_TYPES_.end(), module_type) == DAQModule::VALID_MODULE_TYPES_.end())
             {
-                std::cerr << "Error: Unsupported module type: " << module_type << std::endl;
-                throw std::runtime_error("Unsupported module name: " + module_type);
+                std::cerr << "CloverSort [ERROR]: Unsupported module type: " << module_type << std::endl;
             }
             // Create a DAQModule object and parse filters
-            DAQModule module(module_name, module_type);
+            DAQModule *pmodule = new DAQModule(module_name, module_type);
             std::string filter;
             while (iss >> filter)
             {
                 if (filter == "default")
                 {
-                    module.generateDefaultFilters();
+                    pmodule->generateDefaultFilters();
                 }
                 else
                 {
                     // Add the filter to the module
-                    module.addFilter(filter);
+                    pmodule->addFilter(filter);
                 }
-                module.addFilter(filter);
             }
             // Add the module to the list of DAQ modules
-            daq_modules_.push_back(module);
+            daq_modules_.push_back(pmodule);
         }
         // Handle Detector definitions
         else if (current_section == "Detectors")
@@ -140,44 +142,70 @@ Experiment::Experiment(const TString name, const TString file_name)
 
             // Parse the channels, which are given as a range like 0-3 or comma separated like 0,1,2,3
             std::vector<Int_t> detector_channels_parsed = parseNumberString(detector_channels);
-
+            // Find the DAQModule this detector belongs to
+            DAQModule *pdaq_module = nullptr;
+            for (DAQModule *pmodule : daq_modules_)
+            {
+                if (pmodule->getName() == detector_module)
+                {
+                    pdaq_module = pmodule;
+                    break;
+                }
+            }
             // Create a Detector object and add it to the appropriate DAQModule
             if (!daq_modules_.empty())
             {
-                Detector detector(detector_name, detector_type, detector_channels_parsed);
-                daq_modules_.back().addDetector(detector);
+                Detector *pdetector = new Detector(detector_name, detector_type, detector_channels_parsed, pdaq_module);
+                pdaq_module->addDetector(pdetector);
             }
         }
         // Handle Run definitions
         else if (current_section == "Runs")
         {
-            // Format: run_number    run_description    run_type    file_name
-            std::string run_numbers, run_description, run_type, file_name, tree_name;
-            if (!(iss >> run_numbers >> run_description >> run_type >> file_name >> tree_name))
-                continue;
-            // Parse the run numbers and file name. If it contains '###' we need to replace that with the proper run number in 3 digit format
-            std::vector<Int_t> run_numbers_parsed = parseNumberString(run_numbers);
-            if (file_name.find("###") != std::string::npos)
+            // Check for FilenamePattern line
+            if (trimmed_line.find("FilenamePattern") == 0)
             {
-                for (Int_t run_number : run_numbers_parsed)
+                // Format: FilenamePattern    /absolute/path/to/file---.root
+                std::string keyword, pattern;
+                iss >> keyword;
+                std::getline(iss, pattern);
+                size_t valStart = pattern.find_first_not_of(" \t");
+                if (valStart != std::string::npos)
+                    pattern = pattern.substr(valStart);
+                // Store the pattern for use in subsequent run lines
+                run_filename_pattern = pattern;
+                continue;
+            }
+
+            // Format: run_number    run_description    run_type    tree_name
+            std::string run_numbers, run_description, run_type, tree_name;
+            if (!(iss >> run_numbers >> run_description >> run_type >> tree_name))
+                continue;
+
+            std::vector<Int_t> run_numbers_parsed = parseNumberString(run_numbers);
+
+            for (Int_t run_number : run_numbers_parsed)
+            {
+                std::string file_name;
+                if (!run_filename_pattern.empty() && run_filename_pattern.find("---") != std::string::npos)
                 {
-                    // Format the filename correctly
                     std::ostringstream oss;
                     oss << std::setw(3) << std::setfill('0') << run_number;
-                    file_name = file_name.replace(file_name.find("###"), 3, oss.str());
-
-                    // Replace '###' in the file name with the run number in 3-digit format
-                    std::string formatted_file_name = file_name;
-                    formatted_file_name = formatted_file_name.replace(formatted_file_name.find("###"), 3, oss.str());
-
-                    // Create a Run object
-                    Run run(run_number, file_name, tree_name, run_description, run_type);
-
-                    runs_.push_back(run);
+                    file_name = run_filename_pattern;
+                    file_name.replace(file_name.find("---"), 3, oss.str());
                 }
+                else
+                {
+                    file_name = run_filename_pattern;
+                }
+
+                Run *prun = new Run(run_number, run_description, run_type, file_name, tree_name);
+                runs_.push_back(prun);
             }
         }
     }
+
+    std::cout << "CloverSort [INFO]: Experiment " << name_.Data() << " defined successfully." << std::endl;
 
     printInfo();
 }
@@ -193,41 +221,41 @@ const TString &Experiment::getName() const
     return name_;
 }
 
-const DAQModule *Experiment::getDAQModule(const TString module_name) const
+const DAQModule *Experiment::getDAQModule(const TString &module_name) const
 {
     for (const auto &module : daq_modules_)
     {
-        if (module.getName() == module_name)
+        if (module->getName() == module_name)
         {
-            return &module;
+            return module;
         }
     }
     return nullptr; // Return nullptr if the module is not found
 }
 
-const std::vector<DAQModule> *Experiment::getDAQModules() const
+const std::vector<DAQModule *> *Experiment::getDAQModules() const
 {
     return &daq_modules_;
 }
 
-const Run *Experiment::getRun(const Int_t runNumber) const
+const Run *Experiment::getRun(const Int_t run_number) const
 {
     for (const auto &run : runs_)
     {
-        if (run.getRunNumber() == runNumber)
+        if (run->getRunNumber() == run_number)
         {
-            return &run;
+            return run;
         }
     }
     return nullptr; // Return nullptr if the run is not found
 }
 
-const std::vector<Run> *Experiment::getRuns() const
+const std::vector<Run *> *Experiment::getRuns() const
 {
     return &runs_;
 }
 
-void Experiment::addDAQModule(const DAQModule &module)
+void Experiment::addDAQModule(DAQModule *module)
 {
     daq_modules_.push_back(module);
 }
@@ -235,24 +263,24 @@ void Experiment::addDAQModule(const DAQModule &module)
 void Experiment::removeDAQModule(const TString &module_name)
 {
     auto it = std::remove_if(daq_modules_.begin(), daq_modules_.end(),
-                             [&module_name](const DAQModule &module)
-                             { return module.getName() == module_name; });
+                             [module_name](const DAQModule *pmodule)
+                             { return pmodule->getName() == module_name; });
     if (it != daq_modules_.end())
     {
         daq_modules_.erase(it, daq_modules_.end());
     }
 }
 
-void Experiment::addRun(const Run &run)
+void Experiment::addRun(Run *run)
 {
     runs_.push_back(run);
 }
 
-void Experiment::removeRun(const Int_t &run_number)
+void Experiment::removeRun(const Int_t run_number)
 {
     auto it = std::remove_if(runs_.begin(), runs_.end(),
-                             [&run_number](const Run &run)
-                             { return run.getRunNumber() == run_number; });
+                             [run_number](const Run *prun)
+                             { return prun->getRunNumber() == run_number; });
     if (it != runs_.end())
     {
         runs_.erase(it, runs_.end());
@@ -261,18 +289,37 @@ void Experiment::removeRun(const Int_t &run_number)
 
 void Experiment::printInfo() const
 {
-    std::cout << "Experiment Name: " << name_.Data() << std::endl;
-    std::cout << "File Name: " << file_name_.Data() << std::endl;
+    std::cout << Form("Experiment %s (%s)", name_.Data(), file_name_.Data()) << std::endl;
 
-    std::cout << "DAQ Modules:" << std::endl;
-    for (const auto &module : daq_modules_)
+    // DAQ Modules
+    std::cout << "├── Modules" << std::endl;
+    for (size_t i = 0; i < daq_modules_.size(); ++i)
     {
-        module.printInfo();
+        const auto pmodule = daq_modules_[i];
+        bool is_last_module = (i == daq_modules_.size() - 1);
+        std::cout << "│   " << (is_last_module ? "└── " : "├── ");
+        pmodule->printInfo();
+
+        // Print detectors for this module, indented under the module
+        const auto *detectors = pmodule->getDetectors();
+        if (detectors && !detectors->empty())
+        {
+            for (size_t j = 0; j < detectors->size(); ++j)
+            {
+                bool is_last_detector = (j == detectors->size() - 1);
+                // Indent to show detector is under its module
+                std::cout << "│   " << (is_last_module ? "    " : "│   ");
+                std::cout << (is_last_detector ? "    └── " : "    ├── ");
+                (*detectors)[j]->printInfo();
+            }
+        }
     }
 
-    std::cout << "Runs:" << std::endl;
-    for (const auto &run : runs_)
+    // Runs
+    std::cout << "└── Runs" << std::endl;
+    for (size_t i = 0; i < runs_.size(); ++i)
     {
-        run.printInfo();
+        std::cout << "    " << (i == runs_.size() - 1 ? "└── " : "├── ");
+        runs_[i]->printInfo();
     }
 }

@@ -9,7 +9,7 @@ class DAQModule;
 class Detector
 {
 public:
-    Detector(TString name, TString type, std::vector<Int_t> channels);
+    Detector(TString name, TString type, std::vector<Int_t> channels, DAQModule *pdaq_module = nullptr); // Constructor with optional DAQModule pointer
     virtual ~Detector();
 
     // Getters
@@ -17,20 +17,17 @@ public:
     const TString &getName() const;
     const TString &getType() const;
     const std::vector<Int_t> *getChannels() const;
+    const DAQModule *getDAQModule() const;
 
     // Setters
 
-    void setName(const TString name);
-    void setType(const TString type);
-    void setChannels(const std::vector<Int_t> channels);
+    void setName(const TString &name);
+    void setType(const TString &type);
+    void setChannels(const std::vector<Int_t> &channels);
+    void setDAQModule(const DAQModule *pdaq_module);
 
-    // Operators
-    bool operator==(const Detector &other) const
-    {
-        return (name_ == other.name_) && (type_ == other.type_) && (channels_ == other.channels_) && (pdaq_module_ == other.pdaq_module_);
-    }
-
-    // Example virtual function for derived detectors
+    // Methods
+    void printInfo() const;
 
 protected:
     TString name_;                           // Name of the detector

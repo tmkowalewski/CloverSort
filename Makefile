@@ -3,6 +3,7 @@
 # Compiler and flags
 CXX      := g++
 CXXFLAGS := -Wall -Iinclude `root-config --cflags`
+LDFLAGS  := `root-config --libs`
 
 # Directories
 SRC_DIR  := src
@@ -22,7 +23,7 @@ all: $(TARGET)
 # Link object files into the executable
 $(TARGET): $(OBJECTS)
 	@mkdir -p $(BIN_DIR)
-	$(CXX) $(LDFLAGS) -o $@ $^
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
 # Compile source files into object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp

@@ -6,7 +6,7 @@
 const std::vector<TString> DAQModule::VALID_MODULE_TYPES_ = VALID_MODULE_TYPES;
 
 DAQModule::DAQModule(TString module_name, TString module_type)
-    : module_name_(module_name), MODULE_TYPE_(std::find(VALID_MODULE_TYPES_.begin(), VALID_MODULE_TYPES_.end(), module_type) != VALID_MODULE_TYPES_.end() ? 16 : 0), CHANNEL_NUM_(), channel_names_()
+    : module_name_(module_name), MODULE_TYPE_(*std::find(VALID_MODULE_TYPES_.begin(), VALID_MODULE_TYPES_.end(), module_type)), CHANNEL_NUM_(std::find(VALID_MODULE_TYPES_.begin(), VALID_MODULE_TYPES_.end(), module_type) != VALID_MODULE_TYPES_.end() ? 16 : 0), channel_names_()
 {
 }
 
@@ -29,9 +29,9 @@ const TString &DAQModule::getChannelName(Int_t channel) const
     return channel_names_.at(channel);
 }
 
-const Int_t DAQModule::getChannel(TString channelName) const
+const Int_t DAQModule::getChannel(const TString &channel_name) const
 {
-    auto it = std::find(channel_names_.begin(), channel_names_.end(), channelName);
+    auto it = std::find(channel_names_.begin(), channel_names_.end(), channel_name);
     if (it != channel_names_.end())
     {
         return std::distance(channel_names_.begin(), it);
@@ -44,14 +44,14 @@ const std::vector<TString> *DAQModule::getFilters() const
     return &filters_;
 }
 
-void DAQModule::setName(TString module_name)
+void DAQModule::setName(const TString &module_name)
 {
     module_name_ = module_name;
 }
 
-void DAQModule::setChannelName(Int_t channel, TString channelName)
+void DAQModule::setChannelName(const Int_t channel, const TString &channel_name)
 {
-    channel_names_.at(channel) = channelName;
+    channel_names_.at(channel) = channel_name;
 }
 
 void DAQModule::generateDefaultFilters()
@@ -78,90 +78,73 @@ void DAQModule::generateDefaultFilters()
     }
 }
 
-void DAQModule::addFilter(TString filterName)
+void DAQModule::addFilter(const TString &filter_name)
 {
     // Add a filter to the module
-    if (std::find(filters_.begin(), filters_.end(), filterName) == filters_.end())
+    if (std::find(filters_.begin(), filters_.end(), filter_name) == filters_.end())
     {
-        filters_.push_back(filterName);
+        filters_.push_back(filter_name);
     }
     else
     {
-        std::cerr << "CloverSort [WARN]: Filter " << filterName << " already exists in module " << module_name_ << std::endl;
+        std::cerr << "CloverSort [WARN]: Filter " << filter_name << " already exists in module " << module_name_ << std::endl;
     }
 }
 
-void DAQModule::removeFilter(TString filterName)
+void DAQModule::removeFilter(const TString &filter_name)
 {
     // Remove a filter from the module
-    auto it = std::find(filters_.begin(), filters_.end(), filterName);
+    auto it = std::find(filters_.begin(), filters_.end(), filter_name);
     if (it != filters_.end())
     {
         filters_.erase(it);
     }
     else
     {
-        std::cerr << "CloverSort [WARN]: Filter " << filterName << " not found in module " << module_name_ << std::endl;
+        std::cerr << "CloverSort [WARN]: Filter " << filter_name << " not found in module " << module_name_ << std::endl;
     }
 }
 
-void DAQModule::addDetector(Detector &detector)
+void DAQModule::addDetector(Detector *pdetector)
 {
     // Add a detector to the module
-    detectors_.push_back(detector);
+    detectors_.push_back(pdetector);
 }
 
-void DAQModule::removeDetector(Detector &detector)
+void DAQModule::removeDetector(Detector *pdetector)
 {
     // Remove a detector from the module
-    auto it = std::find(detectors_.begin(), detectors_.end(), detector);
+    auto it = std::find(detectors_.begin(), detectors_.end(), pdetector);
     if (it != detectors_.end())
     {
         detectors_.erase(it);
     }
     else
     {
-        std::cerr << "CloverSort [WARN]: Detector " << detector.getName() << " not found in module " << module_name_ << std::endl;
+        std::cerr << "CloverSort [WARN]: Detector " << pdetector->getName() << " not found in module " << module_name_ << std::endl;
     }
 }
 
-const Detector *DAQModule::getDetector(TString &detectorName) const
+const Detector *DAQModule::getDetector(const TString &detector_name) const
 {
     // Get a detector by name
-    for (const auto &detector : detectors_)
+    for (const Detector *pdetector : detectors_)
     {
-        if (detector.getName() == detectorName)
+        if (pdetector->getName() == detector_name)
         {
-            return &detector;
+            return pdetector;
         }
     }
     return nullptr; // Return nullptr if the detector is not found
 }
 
+const std::vector<Detector *> *DAQModule::getDetectors() const
+{
+    return &detectors_;
+}
+
 void DAQModule::printInfo() const
 {
     // Print module information
-    std::cout << "Module Name: " << module_name_ << std::endl;
-    std::cout << "Module Type: " << MODULE_TYPE_ << std::endl;
-    std::cout << "Number of Channels: " << CHANNEL_NUM_ << std::endl;
-    std::cout << "Channel Names: ";
-    for (const auto &name : channel_names_)
-    {
-        std::cout << name << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "Filters: ";
-    for (const auto &filter : filters_)
-    {
-        std::cout << filter << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "Detectors: ";
-    for (const auto &detector : detectors_)
-    {
-        std::cout << detector.getName() << " (" << detector.getType() << ") ";
-    }
-    std::cout << std::endl;
+    std::cout << Form("%s (%s) [%i]", module_name_.Data(), MODULE_TYPE_.Data(), CHANNEL_NUM_) << std::endl;
 }

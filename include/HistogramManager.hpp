@@ -29,8 +29,8 @@ public:
 
     // Methods
 
-    void addHistogram(ROOT::TThreadedObject<TH1D> &histogram);
-    void removeHistogram(TString detector_name, TString name);
+    void addHistogram(ROOT::TThreadedObject<TH1D> *histogram);
+    void removeHistogram(const TString &detector_name, const TString &name);
     std::map<std::vector<TString>, std::vector<std::shared_ptr<TH1D>>> generateHistPtrMap() const;
 
     void writeHistsToFile(TFile *file);

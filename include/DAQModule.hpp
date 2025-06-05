@@ -25,24 +25,24 @@ public:
     virtual const TString &getType() const;
 
     virtual const TString &getChannelName(Int_t channel) const;
-    virtual const Int_t getChannel(TString channelName) const;
+    virtual const Int_t getChannel(const TString &channel_name) const;
     virtual const std::vector<TString> *getFilters() const;
     virtual const std::vector<Detector *> *getDetectors() const;
+    virtual const Detector *getDetector(const TString &detectorName) const;
 
     // Setters
 
-    virtual void setName(TString name);
-    virtual void setChannelName(Int_t channel, const TString channelName);
+    virtual void setName(const TString &name);
+    virtual void setChannelName(const Int_t channel, const TString &channel_name);
 
     // Methods
 
     virtual void generateDefaultFilters();
-    void addFilter(TString filterName);
-    void removeFilter(TString filterName);
+    void addFilter(const TString &filterName);
+    void removeFilter(const TString &filterName);
 
     virtual void addDetector(Detector *detector);
     virtual void removeDetector(Detector *detector);
-    virtual const Detector *getDetector(TString &detectorName) const;
 
     void printInfo() const;
 
