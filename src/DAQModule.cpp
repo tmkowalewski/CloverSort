@@ -14,16 +14,6 @@ DAQModule::~DAQModule()
 {
 }
 
-const TString &DAQModule::getName() const
-{
-    return module_name_;
-}
-
-const TString &DAQModule::getType() const
-{
-    return MODULE_TYPE_;
-}
-
 const TString &DAQModule::getChannelName(Int_t channel) const
 {
     return channel_names_.at(channel);
@@ -39,14 +29,17 @@ const Int_t DAQModule::getChannel(const TString &channel_name) const
     throw std::out_of_range("Channel name not found");
 }
 
-const std::vector<TString> *DAQModule::getFilters() const
+const Detector *DAQModule::getDetector(const TString &detector_name) const
 {
-    return &filters_;
-}
-
-void DAQModule::setName(const TString &module_name)
-{
-    module_name_ = module_name;
+    // Get a detector by name
+    for (const Detector *pdetector : detectors_)
+    {
+        if (pdetector->getName() == detector_name)
+        {
+            return pdetector;
+        }
+    }
+    return nullptr; // Return nullptr if the detector is not found
 }
 
 void DAQModule::setChannelName(const Int_t channel, const TString &channel_name)
@@ -123,24 +116,6 @@ void DAQModule::removeDetector(Detector *pdetector)
     {
         std::cerr << "CloverSort [WARN]: Detector " << pdetector->getName() << " not found in module " << module_name_ << std::endl;
     }
-}
-
-const Detector *DAQModule::getDetector(const TString &detector_name) const
-{
-    // Get a detector by name
-    for (const Detector *pdetector : detectors_)
-    {
-        if (pdetector->getName() == detector_name)
-        {
-            return pdetector;
-        }
-    }
-    return nullptr; // Return nullptr if the detector is not found
-}
-
-const std::vector<Detector *> *DAQModule::getDetectors() const
-{
-    return &detectors_;
 }
 
 void DAQModule::printInfo() const

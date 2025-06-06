@@ -1,6 +1,7 @@
 #ifndef HISTOGRAM_MANAGER_HPP
 #define HISTOGRAM_MANAGER_HPP
 
+#include <vector>
 #include <map>
 #include <TH1D.h>
 #include <TStopwatch.h>
@@ -23,7 +24,7 @@ public:
 
     // Getters
 
-    const std::map<TString, ROOT::TThreadedObject<TH1D>> *getHistograms() const;
+    const std::map<TString, std::vector<ROOT::TThreadedObject<TH1D>>> *getHistograms() const { return &histogram_map_; }
 
     // Setters
 
@@ -39,7 +40,7 @@ public:
     void printInfo();
 
 private:
-    std::map<std::vector<TString>, std::vector<ROOT::TThreadedObject<TH1D>>> histogram_map_; // Map of histograms managed by this class
+    std::map<TString, std::vector<ROOT::TThreadedObject<TH1D>>> histogram_map_; // Map of histograms managed by this class
 };
 
 #endif // HISTOGRAM_MANAGER_HPP

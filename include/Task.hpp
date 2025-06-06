@@ -3,6 +3,8 @@
 
 #include <functional>
 
+class Event;
+
 class Task
 {
 public:
@@ -12,7 +14,9 @@ public:
     // Default destructor
     virtual ~Task() = default;
 
-    std::function<void()> taskFunction; // Function to execute the task
+    std::function<void()> initializeFunction;          // Function to execute the task
+    std::function<void(Event &event)> executeFunction; // Function to execute the task
+    std::function<void()> finalizeFunction;            // Function to finalize the task
 };
 
 #endif // TASK_HPP

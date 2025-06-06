@@ -216,43 +216,22 @@ Experiment::~Experiment()
     // Clean up resources if needed
 }
 
-const TString &Experiment::getName() const
-{
-    return name_;
-}
-
 const DAQModule *Experiment::getDAQModule(const TString &module_name) const
 {
-    for (const auto &module : daq_modules_)
-    {
-        if (module->getName() == module_name)
-        {
-            return module;
-        }
-    }
-    return nullptr; // Return nullptr if the module is not found
-}
-
-const std::vector<DAQModule *> *Experiment::getDAQModules() const
-{
-    return &daq_modules_;
+    auto it = std::find_if(daq_modules_.begin(), daq_modules_.end(),
+                           [&](const DAQModule *m)
+                           { return m->getName() == module_name; });
+    if (it != daq_modules_.end())
+        return *it;
+    return nullptr;
 }
 
 const Run *Experiment::getRun(const Int_t run_number) const
 {
-    for (const auto &run : runs_)
-    {
-        if (run->getRunNumber() == run_number)
-        {
-            return run;
-        }
-    }
-    return nullptr; // Return nullptr if the run is not found
-}
-
-const std::vector<Run *> *Experiment::getRuns() const
-{
-    return &runs_;
+    auto it = std::find_if(runs_.begin(), runs_.end(),
+                           [run_number](const Run *run)
+                           { return run->getRunNumber() == run_number; });
+    return (it != runs_.end()) ? *it : nullptr;
 }
 
 void Experiment::addDAQModule(DAQModule *module)

@@ -10,46 +10,6 @@ Detector::~Detector()
 {
 }
 
-const TString &Detector::getName() const
-{
-    return name_;
-}
-
-const TString &Detector::getType() const
-{
-    return type_;
-}
-
-const std::vector<Int_t> *Detector::getChannels() const
-{
-    return &channels_;
-}
-
-void Detector::setName(const TString &name)
-{
-    name_ = name;
-}
-
-void Detector::setType(const TString &type)
-{
-    type_ = type;
-}
-
-void Detector::setChannels(const std::vector<Int_t> &channels)
-{
-    channels_ = channels;
-}
-
-const DAQModule *Detector::getDAQModule() const
-{
-    return pdaq_module_;
-}
-
-void Detector::setDAQModule(const DAQModule *pdaq_module)
-{
-    pdaq_module_ = pdaq_module;
-}
-
 void Detector::printInfo() const
 {
     // Print the detector information

@@ -45,41 +45,6 @@ Run::~Run()
     delete phist_manager_;
 }
 
-const Int_t Run::getRunNumber() const
-{
-    return run_number_;
-}
-
-const TString &Run::getDescription() const
-{
-    return run_description_;
-}
-
-const TFile *Run::getFile() const
-{
-    return pfile_;
-}
-
-const TString &Run::getFileName() const
-{
-    return file_name_;
-}
-
-const TTree *Run::getTree() const
-{
-    return ptree_;
-}
-
-const TFile *Run::getHistFile() const
-{
-    return phist_file_;
-}
-
-void Run::setRunNumber(const int run_number)
-{
-    run_number_ = run_number;
-}
-
 void Run::setFile(TFile *file)
 {
     if (pfile_)

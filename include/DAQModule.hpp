@@ -21,18 +21,18 @@ public:
 
     // Getters
 
-    virtual const TString &getName() const;
-    virtual const TString &getType() const;
-
+    virtual const TString &getName() const { return module_name_; }
+    virtual const TString &getType() const { return MODULE_TYPE_; }
+    virtual const Int_t getChannelNum() const { return CHANNEL_NUM_; }
     virtual const TString &getChannelName(Int_t channel) const;
     virtual const Int_t getChannel(const TString &channel_name) const;
-    virtual const std::vector<TString> *getFilters() const;
-    virtual const std::vector<Detector *> *getDetectors() const;
+    virtual const std::vector<TString> *getFilters() const { return &filters_; }
+    virtual const std::vector<Detector *> *getDetectors() const { return &detectors_; }
     virtual const Detector *getDetector(const TString &detectorName) const;
 
     // Setters
 
-    virtual void setName(const TString &name);
+    virtual void setName(const TString &name) { module_name_ = name; }
     virtual void setChannelName(const Int_t channel, const TString &channel_name);
 
     // Methods

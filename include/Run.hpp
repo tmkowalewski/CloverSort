@@ -16,17 +16,17 @@ public:
 
     // Getters
 
-    const Int_t getRunNumber() const;
-    const TString &getDescription() const;
-    const TFile *getFile() const;
-    const TString &getFileName() const;
-    const TTree *getTree() const;
-    const TFile *getHistFile() const;
-    const auto *getHistMan() const;
+    const Int_t getRunNumber() const { return run_number_; }
+    const TString &getDescription() const { return run_description_; }
+    const TFile *getFile() const { return pfile_; }
+    const TString &getFileName() const { return file_name_; }
+    const TTree *getTree() const { return ptree_; }
+    const TFile *getHistFile() const { return phist_file_; }
+    const HistogramManager *getHistMan() const { return phist_manager_; }
 
     // Setters
 
-    void setRunNumber(const int run_number);
+    void setRunNumber(const int run_number) { run_number_ = run_number; }
     void setFile(TFile *file);
     void setFile(const TString &file_name);
     void setTree(TTree *tree);

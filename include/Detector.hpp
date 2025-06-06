@@ -14,17 +14,17 @@ public:
 
     // Getters
 
-    const TString &getName() const;
-    const TString &getType() const;
-    const std::vector<Int_t> *getChannels() const;
-    const DAQModule *getDAQModule() const;
+    const TString &getName() const { return name_; }
+    const TString &getType() const { return type_; }
+    const std::vector<Int_t> *getChannels() const { return &channels_; }
+    const DAQModule *getDAQModule() const { return pdaq_module_; }
 
     // Setters
 
-    void setName(const TString &name);
-    void setType(const TString &type);
-    void setChannels(const std::vector<Int_t> &channels);
-    void setDAQModule(const DAQModule *pdaq_module);
+    void setName(const TString &name) { name_ = name; }
+    void setType(const TString &type) { type_ = type; }
+    void setChannels(const std::vector<Int_t> &channels) { channels_ = channels; }
+    void setDAQModule(const DAQModule *pdaq_module) { pdaq_module_ = pdaq_module; }
 
     // Methods
     void printInfo() const;
