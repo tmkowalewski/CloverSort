@@ -4,8 +4,26 @@
 
 #include "Experiment.hpp"
 #include "Run.hpp"
-#include "HistogramManager.hpp"
+#include "TaskManager.hpp"
+#include "Task.hpp"
 #include <ROOT/TTreeProcessorMT.hxx>
+
+void init(int i)
+{
+    std::cout << "CloverSort [INFO]: Initialize Task " << i << std::endl;
+}
+
+char execute()
+{
+    std::cout << "CloverSort [INFO]: Execute Task " << '!' << std::endl;
+    return '!';
+}
+
+bool final(int i)
+{
+    std::cout << "CloverSort [INFO]: Finalize Task " << (i == 1) << std::endl;
+    return bool(i == 1);
+}
 
 int main(int argc, char *argv[])
 {
@@ -24,12 +42,18 @@ int main(int argc, char *argv[])
         Ssiz_t dotPos = filename.Last('.');
         TString experiment_name = (dotPos != kNPOS) ? filename(0, dotPos) : filename;
 
-        Experiment experiment = Experiment(experiment_name, config_path);
+        Experiment Expt = Experiment(experiment_name, config_path);
 
-        std::cout << "CloverSort [INFO]: Experiment " << experiment.getName() << " loaded successfully." << std::endl;
-        std::cout << "CloverSort [INFO]: Tree named " << experiment.getRun(1)->getTree()->GetName() << " with " << experiment.getRun(1)->getTree()->GetEntries() << " entries found." << std::endl;
+        std::cout << "CloverSort [INFO]: Experiment " << Expt.getName() << " loaded successfully." << std::endl;
+        std::cout << "CloverSort [INFO]: Tree named " << Expt.getRun(1)->getTree()->GetName() << " with " << Expt.getRun(1)->getTree()->GetEntries() << " entries found." << std::endl;
 
-        ROOT::TTreeProcessorMT EventProcessor(experiment.getRun(1)->getFileName(), TString(experiment.getRun(1)->getTree()->GetName()));
+        ROOT::TTreeProcessorMT EventProcessor(Expt.getRun(1)->getFileName(), TString(Expt.getRun(1)->getTree()->GetName()));
+
+        TaskManager task_manager;
+        Task<void(int), char(), bool(int)> task(init, execute, final);
+        task.callInitialize(1);
+        std::cout << task.callExecute() << std::endl;
+        std::cout << task.callFinalize(1) << std::endl;
 
         return 0;
     }

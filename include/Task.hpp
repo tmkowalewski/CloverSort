@@ -4,10 +4,9 @@
 #include <functional>
 #include <utility>
 #include <stdexcept>
-#include "ITask.hpp"
 
 template <typename InitFunc, typename ExecFunc, typename FinalFunc>
-class Task : public ITask
+class Task
 {
 public:
     // Constructor accepts any callable compatible with the specified signatures
