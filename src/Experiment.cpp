@@ -48,7 +48,9 @@ Experiment::Experiment(const TString name, const TString file_name)
     std::ifstream config_file(file_name.Data());
     if (!config_file.is_open())
     {
-        std::cout << "CloverSort [Error]: Could not open configuration file: " << file_name.Data() << std::endl;
+        throw std::runtime_error(
+            std::string("Could not open configuration file: ") + file_name.Data());
+
         return;
     }
 
@@ -112,7 +114,7 @@ Experiment::Experiment(const TString name, const TString file_name)
             // Check if module_name is in the list of valid module names
             if (std::find(DAQModule::VALID_MODULE_TYPES_.begin(), DAQModule::VALID_MODULE_TYPES_.end(), module_type) == DAQModule::VALID_MODULE_TYPES_.end())
             {
-                std::cerr << "CloverSort [ERROR]: Unsupported module type: " << module_type << std::endl;
+                throw std::runtime_error("Unsupported module type: " + module_type);
             }
             // Create a DAQModule object and parse filters
             DAQModule *pmodule = new DAQModule(module_name, module_type);

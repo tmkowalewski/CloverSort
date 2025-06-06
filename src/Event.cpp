@@ -51,12 +51,12 @@ const Double_t Event::getData(DAQModule *pdaq_module, const TString &filter, Int
         } }, jt->second);
 }
 
-void Event::addArray(DAQModule *pmodule, const TString &name, TTreeReader *tr)
+void Event::addArray(DAQModule *pmodule, const TString &filter, TTreeReader *ptree_reader)
 {
-    data_[pmodule][name] = TTreeReaderArray<Double_t>(*tr, name);
+    data_[pmodule].insert_or_assign(filter, TTreeReaderArray<Double_t>(*ptree_reader, filter));
 }
 
-void Event::addValue(DAQModule *pmodule, const TString &name, TTreeReader *tr)
+void Event::addValue(DAQModule *pmodule, const TString &filter, TTreeReader *ptree_reader)
 {
-    data_[pmodule][name] = TTreeReaderValue<Double_t>(*tr, name);
+    data_[pmodule].insert_or_assign(filter, TTreeReaderValue<Double_t>(*ptree_reader, filter));
 }

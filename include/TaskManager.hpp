@@ -4,28 +4,27 @@
 #include <vector>
 
 // Forward declarations
-
-class Task;
+class ITask;
 
 class TaskManager
 {
 public:
     // Default constructor
-    TaskManager() = default;
+    TaskManager();
 
     // Default destructor
-    virtual ~TaskManager() = default;
+    virtual ~TaskManager();
 
     // Getters
 
-    const std::vector<Task *> &getTasks() const { return tasks_; }
+    const std::vector<ITask> &getTasks() const { return tasks_; }
 
-    virtual void initialize();
-    virtual void execute();
-    virtual void finalize();
+    virtual void initializeTasks();
+    virtual void executeTasks();
+    virtual void finalizeTasks();
 
 protected:
-    std::vector<Task *> tasks_; // List of tasks to manage
+    std::vector<ITask> tasks_; // List of tasks to manage
 };
 
 #endif // TASK_MANAGER_HPP

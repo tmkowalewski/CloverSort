@@ -3,10 +3,9 @@
 #include <TString.h>
 
 #include "Experiment.hpp"
-#include "DAQModule.hpp"
-#include "Detector.hpp"
 #include "Run.hpp"
 #include "HistogramManager.hpp"
+#include <ROOT/TTreeProcessorMT.hxx>
 
 int main(int argc, char *argv[])
 {
@@ -27,11 +26,16 @@ int main(int argc, char *argv[])
 
         Experiment experiment = Experiment(experiment_name, config_path);
 
+        std::cout << "CloverSort [INFO]: Experiment " << experiment.getName() << " loaded successfully." << std::endl;
+        std::cout << "CloverSort [INFO]: Tree named " << experiment.getRun(1)->getTree()->GetName() << " with " << experiment.getRun(1)->getTree()->GetEntries() << " entries found." << std::endl;
+
+        ROOT::TTreeProcessorMT EventProcessor(experiment.getRun(1)->getFileName(), TString(experiment.getRun(1)->getTree()->GetName()));
+
         return 0;
     }
     catch (const std::exception &e)
     {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "CloverSort [ERROR]: " << e.what() << std::endl;
         return 1;
     }
 }

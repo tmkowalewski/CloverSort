@@ -28,9 +28,9 @@ public:
 
     // Methods
 
-    void addArray(DAQModule *pmodule, const TString &name, TTreeReader *tr);
+    void addArray(DAQModule *pmodule, const TString &filter, TTreeReader *ptree_reader);
 
-    void addValue(DAQModule *pmodule, const TString &name, TTreeReader *tr);
+    void addValue(DAQModule *pmodule, const TString &filter, TTreeReader *ptree_reader);
 
 private:
     TTreeReader *ptree_reader_; // Pointer to the TTreeReader for reading data
@@ -38,7 +38,7 @@ private:
 
     using ReaderVar = std::variant<
         TTreeReaderArray<Double_t>, // For double arrays
-        TTreeReaderValue<Double_t>, // For doubles
+        TTreeReaderValue<Double_t>  // For doubles
         >;
     std::map<DAQModule *, std::map<TString, ReaderVar>> data_;
 };
