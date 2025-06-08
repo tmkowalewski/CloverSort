@@ -5,6 +5,8 @@
 #include <utility>
 #include <stdexcept>
 
+#include "ITask.hpp"
+
 template <typename InitFunc, typename ExecFunc, typename FinalFunc>
 class Task
 {
