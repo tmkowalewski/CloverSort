@@ -1,3 +1,4 @@
+#include <iostream>
 #include "Run.hpp"
 #include "HistogramManager.hpp"
 

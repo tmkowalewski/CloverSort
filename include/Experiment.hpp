@@ -23,9 +23,9 @@ public:
 
     const TString &getName() const { return name_; }
     const DAQModule *getDAQModule(const TString &module_name) const;
-    const std::vector<DAQModule *> *getDAQModules() const { return &daq_modules_; }
+    const std::vector<DAQModule *> &getDAQModules() const { return daq_modules_; }
     const Run *getRun(const Int_t runNumber) const;
-    const std::vector<Run *> *getRuns() const { return &runs_; }
+    const std::vector<Run *> &getRuns() const { return runs_; }
 
     // Setters
 

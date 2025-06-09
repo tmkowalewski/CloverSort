@@ -29,7 +29,6 @@ public:
     // Methods
 
     void addArray(DAQModule *pmodule, const TString &filter, TTreeReader *ptree_reader);
-
     void addValue(DAQModule *pmodule, const TString &filter, TTreeReader *ptree_reader);
 
 private:
