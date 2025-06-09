@@ -17,14 +17,17 @@ public:
 
     // Getters
 
-    const std::vector<ITask> &getTasks() const { return tasks_; }
+    const std::vector<ITask *> &getTasks() const { return tasks_; }
 
     virtual void initializeTasks();
     virtual void executeTasks();
     virtual void finalizeTasks();
 
+    virtual void addTask(ITask *task);
+    virtual void removeTask(ITask *task);
+
 protected:
-    std::vector<ITask> tasks_; // List of tasks to manage
+    std::vector<ITask *> tasks_; // List of tasks to manage
 };
 
 #endif // TASK_MANAGER_HPP

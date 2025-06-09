@@ -35,14 +35,9 @@ int main(int argc, char *argv[])
 
     try
     {
-        // Extract experiment name from the config file name (without extension)
-        TString config_path = argv[1];
-        Ssiz_t lastSlash = config_path.Last('/');
-        TString filename = (lastSlash != kNPOS) ? config_path(lastSlash + 1, config_path.Length() - lastSlash - 1) : config_path;
-        Ssiz_t dotPos = filename.Last('.');
-        TString experiment_name = (dotPos != kNPOS) ? filename(0, dotPos) : filename;
-
-        Experiment Expt = Experiment(experiment_name, config_path);
+        // Define the experiment from the configuration file
+        std::cout << "CloverSort [INFO]: Initializing Experiment from configuration file: " << argv[1] << std::endl;
+        Experiment Expt = Experiment(argv[1]);
 
         std::cout << "CloverSort [INFO]: Experiment " << Expt.getName() << " loaded successfully." << std::endl;
         std::cout << "CloverSort [INFO]: Tree named " << Expt.getRun(1)->getTree()->GetName() << " with " << Expt.getRun(1)->getTree()->GetEntries() << " entries found." << std::endl;
@@ -50,10 +45,18 @@ int main(int argc, char *argv[])
         ROOT::TTreeProcessorMT EventProcessor(Expt.getRun(1)->getFileName(), TString(Expt.getRun(1)->getTree()->GetName()));
 
         TaskManager task_manager;
-        Task<void(int), char(), bool(int)> task(init, execute, final);
-        task.callInitialize(1);
-        std::cout << task.callExecute() << std::endl;
-        std::cout << task.callFinalize(1) << std::endl;
+
+        Task<void(int), char(), bool(int)> task("test", init, execute, final);
+        task.setInitializeArguments(std::make_tuple(1));
+        task.setExecuteArguments(std::make_tuple());
+        task.setFinalizeArguments(std::make_tuple(1));
+
+        task_manager.addTask(&task);
+        task_manager.initializeTasks();
+        task_manager.executeTasks();
+        task_manager.finalizeTasks();
+
+        std::cout << (task.getExecuteOutput() == '!' ? Form("CloverSort [INFO]: Task %s executed successfully.", task.getName().Data()) : Form("CloverSort [ERROR]: Task %s execution failed.", task.getName().Data())) << std::endl;
 
         return 0;
     }

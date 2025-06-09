@@ -40,8 +40,8 @@ std::vector<Int_t> parseNumberString(const TString &number_string)
 }
 
 // Constructor
-Experiment::Experiment(const TString name, const TString file_name)
-    : name_(name), file_name_(file_name),
+Experiment::Experiment(const TString file_name)
+    : file_name_(file_name),
       daq_modules_(), runs_()
 {
     // Set the file and check if it exists

@@ -12,7 +12,11 @@ class Run;
 class Experiment
 {
 public:
-    Experiment(const TString name, const TString file_name);
+    // Constructors
+    Experiment(const TString file_name);
+    Experiment();
+
+    // Default destructor method
     ~Experiment();
 
     // Getters
