@@ -80,7 +80,7 @@ Experiment::Experiment(const TString file_name)
         if (trimmed_line == "ExperimentOptions" || trimmed_line == "DAQModules" || trimmed_line == "Detectors" || trimmed_line == "Runs")
         {
             current_section = trimmed_line;
-            std::cout << "CloverSort [INFO]: Entering section " << current_section << std::endl;
+            // std::cout << "CloverSort [INFO]: Entering section " << current_section << std::endl;
             continue;
         }
         std::istringstream iss(trimmed_line);
