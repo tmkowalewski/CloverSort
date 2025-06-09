@@ -1,6 +1,7 @@
+#include <algorithm>
+#include <TString.h>
 #include "TaskManager.hpp"
 #include "ITask.hpp"
-#include <algorithm>
 
 TaskManager::TaskManager() = default;
 
@@ -40,9 +41,11 @@ void TaskManager::addTask(ITask *task)
     }
 }
 
-void TaskManager::removeTask(ITask *task)
+void TaskManager::removeTask(const TString &name)
 {
-    auto it = std::remove(tasks_.begin(), tasks_.end(), task);
+    auto it = std::remove_if(tasks_.begin(), tasks_.end(),
+                             [&name](ITask *task)
+                             { return task->getName() == name; });
     if (it != tasks_.end())
     {
         tasks_.erase(it, tasks_.end());

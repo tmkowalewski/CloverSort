@@ -24,7 +24,7 @@ public:
     virtual void finalizeTasks();
 
     virtual void addTask(ITask *task);
-    virtual void removeTask(ITask *task);
+    virtual void removeTask(const TString &name);
 
 protected:
     std::vector<ITask *> tasks_; // List of tasks to manage
