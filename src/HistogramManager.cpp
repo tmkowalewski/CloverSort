@@ -11,32 +11,7 @@ HistogramManager::HistogramManager()
 
 HistogramManager::HistogramManager(Experiment *experiment)
 {
-    for (const auto &pdaq_module : experiment->getDAQModules())
-    {
-        for (const auto &filter : pdaq_module->getFilters())
-        {
-            if (filter == "module_timestamp") // Only one value of module_timestamp per module
-            {
-                std::vector<TString> histogram_path = {pdaq_module->getName()};
-                TString hist_name = Form("%s.%s", pdaq_module->getName().Data(), filter.Data());
-                TString hist_title = Form("%s %s", pdaq_module->getName().Data(), filter.Data());
-                addHistogram(hist_name, hist_title, DAQ_BINS, 0, DAQ_BINS - 1, histogram_path);
-                continue;
-            }
-            for (const auto &pdetector : pdaq_module->getDetectors())
-            {
-                for (const auto &channel : pdetector->getChannels())
-                {
-                    // Every filter on every channel of every detector in every daq module gets a histogram
-                    std::vector<TString> histogram_path = {pdaq_module->getName(), pdetector->getName()};
-                    Int_t crystal_num = channel % pdetector->getChannels().size() + 1;
-                    TString hist_name = Form("%sE%i.%s", pdetector->getName().Data(), crystal_num, filter.Data());
-                    TString hist_title = Form("%sE%i %s", pdetector->getName().Data(), crystal_num, filter.Data());
-                    addHistogram(hist_name, hist_title, DAQ_BINS, 0, DAQ_BINS - 1, histogram_path);
-                }
-            }
-        }
-    }
+    initFromExperiment(experiment);
 }
 
 HistogramManager::~HistogramManager()
@@ -50,6 +25,46 @@ HistogramManager::~HistogramManager()
         }
     }
     histogram_map_.clear(); // Clear the map
+}
+
+void HistogramManager::initFromExperiment(Experiment *experiment)
+{
+    for (const auto &pdaq_module : experiment->getDAQModules())
+    {
+        // Create module-specific histograms (e.g., module_timestamp)
+        for (const auto &filter : pdaq_module->getFilters())
+        {
+            if (filter == "module_timestamp" || filter == "trigger_time")
+            {
+                std::vector<TString> histogram_path = {pdaq_module->getName()};
+                TString hist_name = Form("%s.%s", pdaq_module->getName().Data(), filter.Data());
+                TString hist_title = Form("%s %s", pdaq_module->getName().Data(), filter.Data());
+                addHistogram(hist_name, hist_title, DAQ_BINS, 0, DAQ_BINS - 1, histogram_path);
+            }
+        }
+
+        // Create channel-specific histograms for all other filters
+        for (const auto &pdetector : pdaq_module->getDetectors())
+        {
+            for (const auto &channel : pdetector->getChannels()) // Assuming 'channel' is a 0-indexed integer ID
+            {
+                for (const auto &filter : pdaq_module->getFilters())
+                {
+                    if (filter != "module_timestamp" && filter != "trigger_time") // Exclude module_timestamp, as it's handled above
+                    {
+                        std::vector<TString> histogram_path = {pdaq_module->getName(), pdetector->getName()};
+                        // Assuming 'channel' is a 0-indexed integer ID from the collection pdetector->getChannels()
+                        // and we want a 1-indexed crystal number for the histogram name.
+                        // This calculation maps a 0-indexed 'channel' value to a 1-indexed 'crystal_num'.
+                        Int_t crystal_num = channel % pdetector->getChannels().size() + 1;
+                        TString hist_name = Form("%sE%i.%s", pdetector->getName().Data(), crystal_num, filter.Data());
+                        TString hist_title = Form("%sE%i %s", pdetector->getName().Data(), crystal_num, filter.Data());
+                        addHistogram(hist_name, hist_title, DAQ_BINS, 0, DAQ_BINS - 1, histogram_path);
+                    }
+                }
+            }
+        }
+    }
 }
 
 void HistogramManager::addHistogram(const TString &name, const TString &title, const Int_t nbinsx, const Double_t &xlow, const Double_t &xup, std::vector<TString> &histogram_path)
@@ -84,27 +99,108 @@ HistogramManager::HistogramPtrMap HistogramManager::makeHistPtrMap()
 
 void HistogramManager::printInfo()
 {
-    std::cout << "HistogramManager Info:" << std::endl;
-    size_t path_count = 0;
+    struct PrintNode
+    {
+        std::map<TString, std::unique_ptr<PrintNode>> children; // Sub-nodes (directories)
+        std::vector<ROOT::TThreadedObject<TH1D> *> histograms;  // Histograms at this node's level
+
+        PrintNode() = default; // Default constructor
+    };
+
+    std::cout << Form("HistogramManager %s", name_.Data()) << std::endl;
+
+    // 1. Build a tree representation from histogram_map_
+    auto root_node = std::make_unique<PrintNode>(); // Conceptual root, its children are the top-level items
+
     for (const auto &pair : histogram_map_)
     {
-        const auto &histogram_path = pair.first;
-        const auto &histograms = pair.second;
-        bool is_last_path = (++path_count == histogram_map_.size());
+        const std::vector<TString> &path = pair.first;
+        const std::vector<ROOT::TThreadedObject<TH1D> *> &hists_for_path = pair.second;
 
-        std::cout << (is_last_path ? "└── " : "├── ") << "Path: ";
-        for (size_t i = 0; i < histogram_path.size(); ++i)
+        PrintNode *current_treenode = root_node.get();
+        for (const TString &segment : path)
         {
-            std::cout << histogram_path[i] << (i == histogram_path.size() - 1 ? "" : "/");
+            // std::map::operator[] creates if not exists, but here we need to manage unique_ptr
+            if (current_treenode->children.find(segment) == current_treenode->children.end())
+            {
+                current_treenode->children[segment] = std::make_unique<PrintNode>();
+            }
+            current_treenode = current_treenode->children[segment].get();
         }
-        std::cout << "/" << std::endl;
+        // Add histograms to the target node
+        current_treenode->histograms.insert(
+            current_treenode->histograms.end(),
+            hists_for_path.begin(),
+            hists_for_path.end());
+    }
 
-        size_t hist_count = 0;
-        for (const auto &histogram : histograms)
+    // 2. Define a recursive lambda function to print the tree
+    std::function<void(const TString &, const PrintNode *, const std::string &, bool)> print_node_recursive;
+    print_node_recursive =
+        [&](const TString &node_name,       // Name of the current directory/node to print
+            const PrintNode *node_data,     // The data of the current node (its histograms and children)
+            const std::string &line_prefix, // Prefix for the current node's line (e.g., "│   ")
+            bool is_last_sibling)           // True if this node is the last among its siblings
+    {
+        // Print the current node's (directory) name
+        std::cout << line_prefix;
+        std::cout << (is_last_sibling ? "└── " : "├── ");
+        std::cout << node_name.Data() << std::endl;
+
+        // Determine the prefix for items (histograms/subdirectories) listed under this node
+        std::string children_prefix = line_prefix + (is_last_sibling ? "    " : "│   ");
+
+        // Combine histograms and subdirectories to correctly determine the "last item" for connector symbols
+        size_t num_histograms = node_data->histograms.size();
+        size_t num_subdirs = node_data->children.size();
+        size_t total_items_in_node = num_histograms + num_subdirs;
+        size_t items_processed_so_far = 0;
+
+        // Print histograms at this node's level
+        for (const auto &hist_obj_ptr : node_data->histograms)
         {
-            bool is_last_hist = (++hist_count == histograms.size());
-            std::cout << (is_last_path ? "    " : "│   ") << (is_last_hist ? "└── " : "├── ");
-            std::cout << "Histogram: " << histogram->Get()->GetName() << " - " << histogram->Get()->GetTitle() << std::endl;
+            items_processed_so_far++;
+            bool is_this_hist_the_last_item = (items_processed_so_far == total_items_in_node);
+
+            std::cout << children_prefix;
+            std::cout << (is_this_hist_the_last_item ? "└── " : "├── ");
+            // Assuming hist_obj_ptr->Get() returns TH1D* or similar with GetName() and GetTitle()
+            std::cout << hist_obj_ptr->Get()->GetName() << Form(" (%s)", hist_obj_ptr->Get()->GetTitle()) << std::endl;
         }
+
+        // Recursively print subdirectories
+        // std::map iterates in key-sorted order, ensuring consistent output for subdirectories
+        auto subdir_iterator = node_data->children.begin();
+        while (subdir_iterator != node_data->children.end())
+        {
+            items_processed_so_far++;
+            bool is_this_subdir_the_last_item = (items_processed_so_far == total_items_in_node);
+
+            const TString &subdir_name = subdir_iterator->first;
+            const std::unique_ptr<PrintNode> &subdir_node_ptr = subdir_iterator->second;
+
+            print_node_recursive(subdir_name, subdir_node_ptr.get(), children_prefix, is_this_subdir_the_last_item);
+
+            ++subdir_iterator;
+        }
+    };
+
+    // 3. Start printing from the children of the conceptual root node
+    size_t total_top_level_nodes = root_node->children.size();
+    size_t top_level_nodes_processed = 0;
+
+    // std::map iterates in key-sorted order, ensuring consistent output for top-level directories
+    auto top_level_iterator = root_node->children.begin();
+    while (top_level_iterator != root_node->children.end())
+    {
+        top_level_nodes_processed++;
+        bool is_last_top_level_node = (top_level_nodes_processed == total_top_level_nodes);
+
+        const TString &node_name = top_level_iterator->first;
+        const std::unique_ptr<PrintNode> &node_ptr = top_level_iterator->second;
+
+        print_node_recursive(node_name, node_ptr.get(), "", is_last_top_level_node); // Initial line_prefix is empty
+
+        ++top_level_iterator;
     }
 }

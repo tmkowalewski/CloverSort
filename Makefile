@@ -59,9 +59,9 @@ install: $(TARGET) $(SHARED_LIB_TARGET)
 	@cp $(INC_DIR)/*.hpp ~/.local/include/CloverSort
 
 uninstall:
-	sudo rm -f ~/.local/bin/CloverSort
-	sudo rm -rf ~/.local/lib/CloverSort
-	sudo rm -rf ~/.local/include/CloverSort
+	@rm -f ~/.local/bin/CloverSort
+	@rm -rf ~/.local/lib/CloverSort
+	@rm -rf ~/.local/include/CloverSort
 
 # Clean up build artifacts
 clean:

@@ -15,8 +15,12 @@ class Detector;
 class HistogramManager
 {
 public:
+    // Constructors
+
     HistogramManager();
     HistogramManager(Experiment *experiment);
+
+    // Default destructor method
     ~HistogramManager();
 
     // Getters
@@ -30,6 +34,8 @@ public:
 
     // Methods
 
+    void initFromExperiment(Experiment *experiment);
+
     void addHistogram(const TString &name, const TString &title, const Int_t nbinsx, const Double_t &xlow, const Double_t &xup, std::vector<TString> &histogram_path);
     void removeHistogram(const std::vector<TString> &histogram_path, const TString &name);
 
@@ -37,7 +43,6 @@ public:
     HistogramPtrMap makeHistPtrMap();
 
     void writeHistsToFile(TFile *file);
-    // void readHistsFromFile(TFile *file);
 
     void printInfo();
 
