@@ -7,7 +7,7 @@ Event::Event(std::vector<DAQModule *> daq_modules, TTreeReader *ptree_reader)
 {
     for (DAQModule *pmodule : daq_modules_)
     {
-        for (const TString &filter : *pmodule->getFilters())
+        for (const TString &filter : pmodule->getFilters())
         {
             try
             {

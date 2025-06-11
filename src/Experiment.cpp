@@ -77,7 +77,7 @@ Experiment::Experiment(const TString file_name)
             continue;
 
         // Check for section headers
-        if (trimmed_line == "ExperimentOptions" || trimmed_line == "DAQModules" || trimmed_line == "Detectors" || trimmed_line == "Runs")
+        if (trimmed_line == "Experiment" || trimmed_line == "DAQModules" || trimmed_line == "Detectors" || trimmed_line == "Runs")
         {
             current_section = trimmed_line;
             // std::cout << "CloverSort [INFO]: Entering section " << current_section << std::endl;
@@ -99,7 +99,7 @@ Experiment::Experiment(const TString file_name)
                 value = value.substr(valStart);
             if (option == "Name")
             {
-                name_ = value.c_str();
+                name_ = TString(value);
             }
             // Other options (e.g. FilenamePattern) can be parsed similarly.
         }
@@ -282,16 +282,16 @@ void Experiment::printInfo() const
         pmodule->printInfo();
 
         // Print detectors for this module, indented under the module
-        const auto *detectors = pmodule->getDetectors();
-        if (detectors && !detectors->empty())
+        const auto detectors = pmodule->getDetectors();
+        if (!detectors.empty())
         {
-            for (size_t j = 0; j < detectors->size(); ++j)
+            for (size_t j = 0; j < detectors.size(); ++j)
             {
-                bool is_last_detector = (j == detectors->size() - 1);
+                bool is_last_detector = (j == detectors.size() - 1);
                 // Indent to show detector is under its module
                 std::cout << "│   " << (is_last_module ? "    " : "│   ");
                 std::cout << (is_last_detector ? "    └── " : "    ├── ");
-                (*detectors)[j]->printInfo();
+                detectors[j]->printInfo();
             }
         }
     }

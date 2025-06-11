@@ -16,7 +16,7 @@ public:
 
     const TString &getName() const { return name_; }
     const TString &getType() const { return type_; }
-    const std::vector<Int_t> *getChannels() const { return &channels_; }
+    const std::vector<Int_t> &getChannels() const { return channels_; }
     const DAQModule *getDAQModule() const { return pdaq_module_; }
 
     // Setters

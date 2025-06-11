@@ -1,6 +1,8 @@
 #ifndef DAQMODULE_HPP
 #define DAQMODULE_HPP
 
+#define DAQ_BINS 65536    // 16-bit digitizer
+#define DAQ_BINS2NS 0.098 // 0.098 ns/bin (when binned in 16-bit time spectrum)
 #define VALID_MODULE_TYPES {"mdpp16scp", "mdpp16qdc"}
 
 #include <vector>
@@ -26,8 +28,8 @@ public:
     virtual const Int_t getChannelNum() const { return CHANNEL_NUM_; }
     virtual const TString &getChannelName(Int_t channel) const;
     virtual const Int_t getChannel(const TString &channel_name) const;
-    virtual const std::vector<TString> *getFilters() const { return &filters_; }
-    virtual const std::vector<Detector *> *getDetectors() const { return &detectors_; }
+    virtual const std::vector<TString> &getFilters() const { return filters_; }
+    virtual const std::vector<Detector *> getDetectors() const { return detectors_; }
     virtual const Detector *getDetector(const TString &detectorName) const;
 
     // Setters

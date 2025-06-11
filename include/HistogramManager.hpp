@@ -8,6 +8,7 @@
 
 // Forward declarations
 
+class Experiment;
 class DAQModule;
 class Detector;
 
@@ -15,13 +16,17 @@ class HistogramManager
 {
 public:
     HistogramManager();
+    HistogramManager(Experiment *experiment);
     ~HistogramManager();
 
     // Getters
     using HistogramMap = std::map<std::vector<TString>, std::vector<ROOT::TThreadedObject<TH1D> *>>;
     const HistogramMap &getHistograms() const { return histogram_map_; }
+    const TString &getName() const { return name_; }
 
     // Setters
+
+    void setName(const TString &name) { name_ = name; }
 
     // Methods
 
@@ -37,6 +42,7 @@ public:
     void printInfo();
 
 private:
+    TString name_;
     HistogramMap histogram_map_; // Map of histograms managed by this class
 };
 

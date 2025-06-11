@@ -1,6 +1,5 @@
 #include <iostream>
 #include "Run.hpp"
-#include "HistogramManager.hpp"
 
 Run::Run(Int_t run_number, TString run_description, TString run_type, TString file_name, TString tree_name)
     : run_number_(run_number), run_description_(run_description), run_type_(run_type), file_name_(file_name), tree_name_(tree_name)
@@ -21,9 +20,6 @@ Run::Run(Int_t run_number, TString run_description, TString run_type, TString fi
 
     // Initialize histogram file pointer
     phist_file_ = nullptr; // Initially set to nullptr, can be set later if needed
-
-    // Initialize histogram manager pointer
-    phist_manager_ = new HistogramManager(); // Assuming HistogramManager has a default constructor
 }
 
 Run::~Run()
@@ -43,7 +39,6 @@ Run::~Run()
     {
         delete ptree_;
     }
-    delete phist_manager_;
 }
 
 void Run::setFile(TFile *file)
