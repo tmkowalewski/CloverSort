@@ -21,21 +21,21 @@ public:
 
     // Getters
 
-    const TString &getName() const { return name_; }
-    const DAQModule *getDAQModule(const TString &module_name) const;
-    const std::vector<DAQModule *> &getDAQModules() const { return daq_modules_; }
-    const Run *getRun(const Int_t runNumber) const;
-    const std::vector<Run *> &getRuns() const { return runs_; }
+    const TString &GetName() const { return name_; }
+    const DAQModule *GetDAQModule(const TString &module_name) const;
+    const std::vector<DAQModule *> &GetDAQModules() const { return daq_modules_; }
+    const Run *GetRun(const Int_t runNumber) const;
+    const std::vector<Run *> &GetRuns() const { return runs_; }
 
     // Setters
 
     // Methods
-    void addDAQModule(DAQModule *module);
-    void removeDAQModule(const TString &module_name);
-    void addRun(Run *run);
-    void removeRun(const Int_t run_number);
+    void AddDAQModule(DAQModule *module);
+    void RemoveDAQModule(const TString &module_name);
+    void AddRun(Run *run);
+    void RemoveRun(const Int_t run_number);
 
-    void printInfo() const;
+    void PrintInfo() const;
 
 private:
     TString name_;                         // Name of the experiment, same name as the ROOT Tree MVME generates

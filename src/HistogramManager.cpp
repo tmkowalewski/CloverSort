@@ -11,7 +11,7 @@ HistogramManager::HistogramManager()
 
 HistogramManager::HistogramManager(Experiment *experiment)
 {
-    initFromExperiment(experiment);
+    InitFromExperiment(experiment);
 }
 
 HistogramManager::~HistogramManager()
@@ -27,39 +27,39 @@ HistogramManager::~HistogramManager()
     histogram_map_.clear(); // Clear the map
 }
 
-void HistogramManager::initFromExperiment(Experiment *experiment)
+void HistogramManager::InitFromExperiment(Experiment *experiment)
 {
-    for (const auto &pdaq_module : experiment->getDAQModules())
+    for (const auto &pdaq_module : experiment->GetDAQModules())
     {
         // Create module-specific histograms (e.g., module_timestamp)
-        for (const auto &filter : pdaq_module->getFilters())
+        for (const auto &filter : pdaq_module->GetFilters())
         {
             if (filter == "module_timestamp" || filter == "trigger_time")
             {
-                std::vector<TString> histogram_path = {pdaq_module->getName()};
-                TString hist_name = Form("%s.%s", pdaq_module->getName().Data(), filter.Data());
-                TString hist_title = Form("%s %s", pdaq_module->getName().Data(), filter.Data());
-                addHistogram(hist_name, hist_title, DAQ_BINS, 0, DAQ_BINS - 1, histogram_path);
+                std::vector<TString> histogram_path = {pdaq_module->GetName()};
+                TString hist_name = Form("%s.%s", pdaq_module->GetName().Data(), filter.Data());
+                TString hist_title = Form("%s %s", pdaq_module->GetName().Data(), filter.Data());
+                AddHistogram(hist_name, hist_title, DAQ_BINS, 0, DAQ_BINS - 1, histogram_path);
             }
         }
 
         // Create channel-specific histograms for all other filters
-        for (const auto &pdetector : pdaq_module->getDetectors())
+        for (const auto &pdetector : pdaq_module->GetDetectors())
         {
-            for (const auto &channel : pdetector->getChannels()) // Assuming 'channel' is a 0-indexed integer ID
+            for (const auto &channel : pdetector->GetChannels()) // Assuming 'channel' is a 0-indexed integer ID
             {
-                for (const auto &filter : pdaq_module->getFilters())
+                for (const auto &filter : pdaq_module->GetFilters())
                 {
                     if (filter != "module_timestamp" && filter != "trigger_time") // Exclude module_timestamp, as it's handled above
                     {
-                        std::vector<TString> histogram_path = {pdaq_module->getName(), pdetector->getName()};
-                        // Assuming 'channel' is a 0-indexed integer ID from the collection pdetector->getChannels()
+                        std::vector<TString> histogram_path = {pdaq_module->GetName(), pdetector->GetName()};
+                        // Assuming 'channel' is a 0-indexed integer ID from the collection pdetector->GetChannels()
                         // and we want a 1-indexed crystal number for the histogram name.
                         // This calculation maps a 0-indexed 'channel' value to a 1-indexed 'crystal_num'.
-                        Int_t crystal_num = channel % pdetector->getChannels().size() + 1;
-                        TString hist_name = Form("%sE%i.%s", pdetector->getName().Data(), crystal_num, filter.Data());
-                        TString hist_title = Form("%sE%i %s", pdetector->getName().Data(), crystal_num, filter.Data());
-                        addHistogram(hist_name, hist_title, DAQ_BINS, 0, DAQ_BINS - 1, histogram_path);
+                        Int_t crystal_num = channel % pdetector->GetChannels().size() + 1;
+                        TString hist_name = Form("%sE%i.%s", pdetector->GetName().Data(), crystal_num, filter.Data());
+                        TString hist_title = Form("%sE%i %s", pdetector->GetName().Data(), crystal_num, filter.Data());
+                        AddHistogram(hist_name, hist_title, DAQ_BINS, 0, DAQ_BINS - 1, histogram_path);
                     }
                 }
             }
@@ -67,20 +67,20 @@ void HistogramManager::initFromExperiment(Experiment *experiment)
     }
 }
 
-void HistogramManager::addHistogram(const TString &name, const TString &title, const Int_t nbinsx, const Double_t &xlow, const Double_t &xup, std::vector<TString> &histogram_path)
+void HistogramManager::AddHistogram(const TString &name, const TString &title, const Int_t nbinsx, const Double_t &xlow, const Double_t &xup, std::vector<TString> &histogram_path)
 {
     auto hist = new ROOT::TThreadedObject<TH1D>(name, title, nbinsx, xlow, xup);
     histogram_map_[histogram_path].push_back(hist);
 }
 
-void HistogramManager::removeHistogram(const std::vector<TString> &histogram_path, const TString &name)
+void HistogramManager::RemoveHistogram(const std::vector<TString> &histogram_path, const TString &name)
 {
     std::remove_if(histogram_map_[histogram_path].begin(), histogram_map_[histogram_path].end(),
                    [&name](ROOT::TThreadedObject<TH1D> *hist)
                    { return hist->Get()->GetName() == name; });
 }
 
-HistogramManager::HistogramPtrMap HistogramManager::makeHistPtrMap()
+HistogramManager::HistogramPtrMap HistogramManager::MakeHistPtrMap()
 {
     HistogramPtrMap hist_ptr_map;
     for (auto &pair : histogram_map_)
@@ -97,7 +97,7 @@ HistogramManager::HistogramPtrMap HistogramManager::makeHistPtrMap()
     return hist_ptr_map;
 }
 
-void HistogramManager::printInfo()
+void HistogramManager::PrintInfo()
 {
     struct PrintNode
     {

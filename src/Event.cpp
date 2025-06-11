@@ -7,17 +7,17 @@ Event::Event(std::vector<DAQModule *> daq_modules, TTreeReader *ptree_reader)
 {
     for (DAQModule *pmodule : daq_modules_)
     {
-        for (const TString &filter : pmodule->getFilters())
+        for (const TString &filter : pmodule->GetFilters())
         {
             try
             {
-                addArray(pmodule, filter, ptree_reader);
+                AddArray(pmodule, filter, ptree_reader);
             }
             catch (const std::bad_variant_access &)
             {
                 // Handle the case where the variant type is not TTreeReaderArray<Double_t>
                 // This can happen if the filter is not an array type
-                addValue(pmodule, filter, ptree_reader);
+                AddValue(pmodule, filter, ptree_reader);
             }
         }
     }
@@ -27,7 +27,7 @@ Event::~Event()
 {
 }
 
-const Double_t Event::getData(DAQModule *pdaq_module, const TString &filter, Int_t channel)
+const Double_t Event::GetData(DAQModule *pdaq_module, const TString &filter, Int_t channel)
 {
     auto it = data_.find(pdaq_module);
     if (it == data_.end())
@@ -51,20 +51,20 @@ const Double_t Event::getData(DAQModule *pdaq_module, const TString &filter, Int
         } }, jt->second);
 }
 
-void Event::addArray(DAQModule *pmodule, const TString &filter, TTreeReader *ptree_reader)
+void Event::AddArray(DAQModule *pmodule, const TString &filter, TTreeReader *ptree_reader)
 {
     // Names in the TTree are "module_name.filter_name", but this is redundant
     // since the module name is already part of the DAQModule object.
     // So we can just use filter directly as the name for the TTreeReaderArray,
     // but we still need to grab module_name.filter_name from the TTree.
-    data_[pmodule].insert_or_assign(filter, TTreeReaderArray<Double_t>(*ptree_reader, pmodule->getName() + "." + filter));
+    data_[pmodule].insert_or_assign(filter, TTreeReaderArray<Double_t>(*ptree_reader, pmodule->GetName() + "." + filter));
 }
 
-void Event::addValue(DAQModule *pmodule, const TString &filter, TTreeReader *ptree_reader)
+void Event::AddValue(DAQModule *pmodule, const TString &filter, TTreeReader *ptree_reader)
 {
     // Names in the TTree are "module_name.filter_name", but this is redundant
     // since the module name is already part of the DAQModule object.
     // So we can just use filter directly as the name for the TTreeReaderArray,
     // but we still need to grab module_name.filter_name from the TTree.
-    data_[pmodule].insert_or_assign(filter, TTreeReaderValue<Double_t>(*ptree_reader, pmodule->getName() + "." + filter));
+    data_[pmodule].insert_or_assign(filter, TTreeReaderValue<Double_t>(*ptree_reader, pmodule->GetName() + "." + filter));
 }

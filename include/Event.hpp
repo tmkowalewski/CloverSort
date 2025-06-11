@@ -21,15 +21,15 @@ public:
 
     // Getters
 
-    const std::vector<DAQModule *> &getDAQModules() const { return daq_modules_; }
-    const Double_t getData(DAQModule *pdaq_module, const TString &filter, Int_t channel = 0);
+    const std::vector<DAQModule *> &GetDAQModules() const { return daq_modules_; }
+    const Double_t GetData(DAQModule *pdaq_module, const TString &filter, Int_t channel = 0);
 
     // Setters
 
     // Methods
 
-    void addArray(DAQModule *pmodule, const TString &filter, TTreeReader *ptree_reader);
-    void addValue(DAQModule *pmodule, const TString &filter, TTreeReader *ptree_reader);
+    void AddArray(DAQModule *pmodule, const TString &filter, TTreeReader *ptree_reader);
+    void AddValue(DAQModule *pmodule, const TString &filter, TTreeReader *ptree_reader);
 
 private:
     TTreeReader *ptree_reader_; // Pointer to the TTreeReader for reading data

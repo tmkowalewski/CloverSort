@@ -26,25 +26,25 @@ public:
     // Getters
     using HistogramMap = std::map<std::vector<TString>, std::vector<ROOT::TThreadedObject<TH1D> *>>;
     const HistogramMap &getHistograms() const { return histogram_map_; }
-    const TString &getName() const { return name_; }
+    const TString &GetName() const { return name_; }
 
     // Setters
 
-    void setName(const TString &name) { name_ = name; }
+    void SetName(const TString &name) { name_ = name; }
 
     // Methods
 
-    void initFromExperiment(Experiment *experiment);
+    void InitFromExperiment(Experiment *experiment);
 
-    void addHistogram(const TString &name, const TString &title, const Int_t nbinsx, const Double_t &xlow, const Double_t &xup, std::vector<TString> &histogram_path);
-    void removeHistogram(const std::vector<TString> &histogram_path, const TString &name);
+    void AddHistogram(const TString &name, const TString &title, const Int_t nbinsx, const Double_t &xlow, const Double_t &xup, std::vector<TString> &histogram_path);
+    void RemoveHistogram(const std::vector<TString> &histogram_path, const TString &name);
 
     using HistogramPtrMap = std::map<std::vector<TString>, std::vector<std::shared_ptr<TH1D>>>;
-    HistogramPtrMap makeHistPtrMap();
+    HistogramPtrMap MakeHistPtrMap();
 
-    void writeHistsToFile(TFile *file);
+    void WriteHistsToFile(TFile *file);
 
-    void printInfo();
+    void PrintInfo();
 
 private:
     TString name_;

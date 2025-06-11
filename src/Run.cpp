@@ -41,7 +41,7 @@ Run::~Run()
     }
 }
 
-void Run::setFile(TFile *file)
+void Run::SetFile(TFile *file)
 {
     if (pfile_)
     {
@@ -57,7 +57,7 @@ void Run::setFile(TFile *file)
     file_name_ = pfile_->GetName(); // Update filename_ to match the new file
 }
 
-void Run::setFile(const TString &file_name)
+void Run::SetFile(const TString &file_name)
 {
     if (pfile_)
     {
@@ -72,7 +72,7 @@ void Run::setFile(const TString &file_name)
     file_name_ = file_name;
 }
 
-void Run::setTree(TTree *tree)
+void Run::SetTree(TTree *tree)
 {
     if (ptree_)
     {
@@ -88,7 +88,7 @@ void Run::setTree(TTree *tree)
     tree_name_ = ptree_->GetName(); // Update treeName_ to match the new tree
 }
 
-void Run::setHistFile(TFile *histFile)
+void Run::SetHistFile(TFile *histFile)
 {
     if (phist_file_)
     {
@@ -105,7 +105,7 @@ void Run::setHistFile(TFile *histFile)
     hist_file_name_ = phist_file_->GetName(); // Update histFileName_ to match the new histogram file
 }
 
-void Run::setHistFile(const TString &histFileName)
+void Run::SetHistFile(const TString &histFileName)
 {
     if (phist_file_)
     {
@@ -120,7 +120,7 @@ void Run::setHistFile(const TString &histFileName)
     hist_file_name_ = histFileName;
 }
 
-void Run::printInfo() const
+void Run::PrintInfo() const
 {
     TString short_file_name = file_name_;
     if (short_file_name.Contains("/"))

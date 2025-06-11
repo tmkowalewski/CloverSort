@@ -23,11 +23,11 @@ int main(int argc, char *argv[])
         // Define the experiment from the configuration file
         Experiment Expt = Experiment(argv[1]);
 
-        for (const auto &run : Expt.getRuns())
+        for (const auto &run : Expt.GetRuns())
         {
-            ROOT::TTreeProcessorMT tree_processor(run->getFileName(), run->getTree()->GetName());
+            ROOT::TTreeProcessorMT tree_processor(run->GetFileName(), run->GetTree()->GetName());
             HistogramManager hist_manager(&Expt);
-            hist_manager.printInfo();
+            hist_manager.PrintInfo();
         }
 
         return 0;

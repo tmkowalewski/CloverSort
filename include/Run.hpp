@@ -15,27 +15,27 @@ public:
 
     // Getters
 
-    const Int_t getRunNumber() const { return run_number_; }
-    const TString &getDescription() const { return run_description_; }
-    const TFile *getFile() const { return pfile_; }
-    const TString &getFileName() const { return file_name_; }
-    const TTree *getTree() const { return ptree_; }
-    const TFile *getHistFile() const { return phist_file_; }
+    const Int_t GetRunNumber() const { return run_number_; }
+    const TString &GetDescription() const { return run_description_; }
+    const TFile *GetFile() const { return pfile_; }
+    const TString &GetFileName() const { return file_name_; }
+    const TTree *GetTree() const { return ptree_; }
+    const TFile *GetHistFile() const { return phist_file_; }
 
     // Setters
 
-    void setRunNumber(const int run_number) { run_number_ = run_number; }
-    void setFile(TFile *file);
-    void setFile(const TString &file_name);
-    void setTree(TTree *tree);
+    void SetRunNumber(const int run_number) { run_number_ = run_number; }
+    void SetFile(TFile *file);
+    void SetFile(const TString &file_name);
+    void SetTree(TTree *tree);
 
-    void setHistFile(TFile *phist_file);
-    void setHistFile(const TString &hist_file_name);
+    void SetHistFile(TFile *phist_file);
+    void SetHistFile(const TString &hist_file_name);
 
     // Methods
-    void createHistogramManager();
+    void CreateHistogramManager();
 
-    void printInfo() const;
+    void PrintInfo() const;
 
     // Destructor
     virtual ~Run();

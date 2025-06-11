@@ -10,7 +10,7 @@ Detector::~Detector()
 {
 }
 
-void Detector::printInfo() const
+void Detector::PrintInfo() const
 {
     // Print the detector information
     TString channel_list;

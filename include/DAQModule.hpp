@@ -23,30 +23,30 @@ public:
 
     // Getters
 
-    virtual const TString &getName() const { return module_name_; }
-    virtual const TString &getType() const { return MODULE_TYPE_; }
-    virtual const Int_t getChannelNum() const { return CHANNEL_NUM_; }
-    virtual const TString &getChannelName(Int_t channel) const;
-    virtual const Int_t getChannel(const TString &channel_name) const;
-    virtual const std::vector<TString> &getFilters() const { return filters_; }
-    virtual const std::vector<Detector *> getDetectors() const { return detectors_; }
-    virtual const Detector *getDetector(const TString &detectorName) const;
+    virtual const TString &GetName() const { return module_name_; }
+    virtual const TString &GetType() const { return MODULE_TYPE_; }
+    virtual const Int_t GetChannelNum() const { return CHANNEL_NUM_; }
+    virtual const TString &GetChannelName(Int_t channel) const;
+    virtual const Int_t GetChannel(const TString &channel_name) const;
+    virtual const std::vector<TString> &GetFilters() const { return filters_; }
+    virtual const std::vector<Detector *> GetDetectors() const { return detectors_; }
+    virtual const Detector *GetDetector(const TString &detectorName) const;
 
     // Setters
 
-    virtual void setName(const TString &name) { module_name_ = name; }
-    virtual void setChannelName(const Int_t channel, const TString &channel_name);
+    virtual void SetName(const TString &name) { module_name_ = name; }
+    virtual void SetChannelName(const Int_t channel, const TString &channel_name);
 
     // Methods
 
-    virtual void generateDefaultFilters();
-    void addFilter(const TString &filterName);
-    void removeFilter(const TString &filterName);
+    virtual void GenerateDefaultFilters();
+    void AddFilter(const TString &filterName);
+    void RemoveFilter(const TString &filterName);
 
-    virtual void addDetector(Detector *detector);
-    virtual void removeDetector(Detector *detector);
+    virtual void AddDetector(Detector *detector);
+    virtual void RemoveDetector(Detector *detector);
 
-    void printInfo() const;
+    void PrintInfo() const;
 
     // Class consts
     static const std::vector<TString> VALID_MODULE_TYPES_; // Valid module types

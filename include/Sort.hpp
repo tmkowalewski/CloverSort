@@ -3,10 +3,14 @@
 
 class Event;
 class HistogramManager;
+
 namespace Sort
 {
+    //
+    void sortRun();
+
     // Function to fill histograms with raw data from the event
-    void fillRawDataHistograms(Event *event, HistogramManager *hist_manager);
+    void fillRawDataHistograms(Event &event, Experiment &experiment, HistogramManager &hist_manager);
 }
 
 #endif // SORT_HPP

@@ -6,7 +6,7 @@
 namespace Fit
 {
 
-    TSpline3 SmoothedSpline(const char *name, std::vector<Double_t> &x, std::vector<Double_t> &y, Double_t smoothingFactor)
+    TSpline3 smoothedSpline(const char *name, std::vector<Double_t> &x, std::vector<Double_t> &y, Double_t smoothingFactor)
     {
         // Finds smoothed cubic spline for given x and y data points
         // References:

@@ -123,12 +123,12 @@ Experiment::Experiment(const TString file_name)
             {
                 if (filter == "default")
                 {
-                    pmodule->generateDefaultFilters();
+                    pmodule->GenerateDefaultFilters();
                 }
                 else
                 {
                     // Add the filter to the module
-                    pmodule->addFilter(filter);
+                    pmodule->AddFilter(filter);
                 }
             }
             // Add the module to the list of DAQ modules
@@ -148,7 +148,7 @@ Experiment::Experiment(const TString file_name)
             DAQModule *pdaq_module = nullptr;
             for (DAQModule *pmodule : daq_modules_)
             {
-                if (pmodule->getName() == detector_module)
+                if (pmodule->GetName() == detector_module)
                 {
                     pdaq_module = pmodule;
                     break;
@@ -158,7 +158,7 @@ Experiment::Experiment(const TString file_name)
             if (!daq_modules_.empty())
             {
                 Detector *pdetector = new Detector(detector_name, detector_type, detector_channels_parsed, pdaq_module);
-                pdaq_module->addDetector(pdetector);
+                pdaq_module->AddDetector(pdetector);
             }
         }
         // Handle Run definitions
@@ -209,7 +209,7 @@ Experiment::Experiment(const TString file_name)
 
     std::cout << "CloverSort [INFO]: Experiment " << name_.Data() << " defined successfully." << std::endl;
 
-    printInfo();
+    PrintInfo();
 }
 
 // Destructor
@@ -218,57 +218,57 @@ Experiment::~Experiment()
     // Clean up resources if needed
 }
 
-const DAQModule *Experiment::getDAQModule(const TString &module_name) const
+const DAQModule *Experiment::GetDAQModule(const TString &module_name) const
 {
     auto it = std::find_if(daq_modules_.begin(), daq_modules_.end(),
                            [&](const DAQModule *m)
-                           { return m->getName() == module_name; });
+                           { return m->GetName() == module_name; });
     if (it != daq_modules_.end())
         return *it;
     return nullptr;
 }
 
-const Run *Experiment::getRun(const Int_t run_number) const
+const Run *Experiment::GetRun(const Int_t run_number) const
 {
     auto it = std::find_if(runs_.begin(), runs_.end(),
                            [run_number](const Run *run)
-                           { return run->getRunNumber() == run_number; });
+                           { return run->GetRunNumber() == run_number; });
     return (it != runs_.end()) ? *it : nullptr;
 }
 
-void Experiment::addDAQModule(DAQModule *module)
+void Experiment::AddDAQModule(DAQModule *module)
 {
     daq_modules_.push_back(module);
 }
 
-void Experiment::removeDAQModule(const TString &module_name)
+void Experiment::RemoveDAQModule(const TString &module_name)
 {
     auto it = std::remove_if(daq_modules_.begin(), daq_modules_.end(),
                              [module_name](const DAQModule *pmodule)
-                             { return pmodule->getName() == module_name; });
+                             { return pmodule->GetName() == module_name; });
     if (it != daq_modules_.end())
     {
         daq_modules_.erase(it, daq_modules_.end());
     }
 }
 
-void Experiment::addRun(Run *run)
+void Experiment::AddRun(Run *run)
 {
     runs_.push_back(run);
 }
 
-void Experiment::removeRun(const Int_t run_number)
+void Experiment::RemoveRun(const Int_t run_number)
 {
     auto it = std::remove_if(runs_.begin(), runs_.end(),
                              [run_number](const Run *prun)
-                             { return prun->getRunNumber() == run_number; });
+                             { return prun->GetRunNumber() == run_number; });
     if (it != runs_.end())
     {
         runs_.erase(it, runs_.end());
     }
 }
 
-void Experiment::printInfo() const
+void Experiment::PrintInfo() const
 {
     std::cout << Form("Experiment %s (%s)", name_.Data(), file_name_.Data()) << std::endl;
 
@@ -279,10 +279,10 @@ void Experiment::printInfo() const
         const auto pmodule = daq_modules_[i];
         bool is_last_module = (i == daq_modules_.size() - 1);
         std::cout << "│   " << (is_last_module ? "└── " : "├── ");
-        pmodule->printInfo();
+        pmodule->PrintInfo();
 
         // Print detectors for this module, indented under the module
-        const auto detectors = pmodule->getDetectors();
+        const auto detectors = pmodule->GetDetectors();
         if (!detectors.empty())
         {
             for (size_t j = 0; j < detectors.size(); ++j)
@@ -291,7 +291,7 @@ void Experiment::printInfo() const
                 // Indent to show detector is under its module
                 std::cout << "│   " << (is_last_module ? "    " : "│   ");
                 std::cout << (is_last_detector ? "    └── " : "    ├── ");
-                detectors[j]->printInfo();
+                detectors[j]->PrintInfo();
             }
         }
     }
@@ -301,6 +301,6 @@ void Experiment::printInfo() const
     for (size_t i = 0; i < runs_.size(); ++i)
     {
         std::cout << "    " << (i == runs_.size() - 1 ? "└── " : "├── ");
-        runs_[i]->printInfo();
+        runs_[i]->PrintInfo();
     }
 }
