@@ -102,6 +102,10 @@ void DAQModule::AddDetector(Detector *pdetector)
 {
     // Add a detector to the module
     detectors_.push_back(pdetector);
+    for (Int_t channel : pdetector->GetChannels())
+    {
+        channel_names_.push_back(Form("%sE%i", pdetector->GetName().Data(), channel % 4 + 1)); // Assuming channels are 0-indexed and we want to name them as E1, E2, etc.
+    }
 }
 
 void DAQModule::RemoveDetector(Detector *pdetector)
@@ -111,6 +115,7 @@ void DAQModule::RemoveDetector(Detector *pdetector)
     if (it != detectors_.end())
     {
         detectors_.erase(it);
+        channel_names_.at(std::distance(detectors_.begin(), it)) = ""; // Clear the channel name associated with the detector
     }
     else
     {

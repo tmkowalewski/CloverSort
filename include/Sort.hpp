@@ -2,6 +2,7 @@
 #define SORT_HPP
 
 class Event;
+class Experiment;
 class HistogramManager;
 
 namespace Sort

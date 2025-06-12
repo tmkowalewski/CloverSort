@@ -55,7 +55,7 @@ protected:
     TString module_name_;                // Name of the module as defined in MVME
     const TString MODULE_TYPE_;          // Type of the module as defined in MVME
     const Int_t CHANNEL_NUM_;            // Number of channels in the module
-    std::vector<TString> channel_names_; // Map of channels, where key is the channel number and value is the channel name
+    std::vector<TString> channel_names_; // Map of channels, where key is the channel name and value is the channel n
     std::vector<TString> filters_;       // List of filters associated with the module
     std::vector<Detector *> detectors_;  // List of detectors associated with this module
 };

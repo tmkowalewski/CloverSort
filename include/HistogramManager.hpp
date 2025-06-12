@@ -15,6 +15,9 @@ class Detector;
 class HistogramManager
 {
 public:
+    using HistogramMap = std::map<std::vector<TString>, std::vector<ROOT::TThreadedObject<TH1D> *>>;
+    using HistogramPtrMap = std::map<std::vector<TString>, std::vector<std::shared_ptr<TH1D>>>;
+
     // Constructors
 
     HistogramManager();
@@ -24,7 +27,6 @@ public:
     ~HistogramManager();
 
     // Getters
-    using HistogramMap = std::map<std::vector<TString>, std::vector<ROOT::TThreadedObject<TH1D> *>>;
     const HistogramMap &getHistograms() const { return histogram_map_; }
     const TString &GetName() const { return name_; }
 
@@ -39,7 +41,6 @@ public:
     void AddHistogram(const TString &name, const TString &title, const Int_t nbinsx, const Double_t &xlow, const Double_t &xup, std::vector<TString> &histogram_path);
     void RemoveHistogram(const std::vector<TString> &histogram_path, const TString &name);
 
-    using HistogramPtrMap = std::map<std::vector<TString>, std::vector<std::shared_ptr<TH1D>>>;
     HistogramPtrMap MakeHistPtrMap();
 
     void WriteHistsToFile(TFile *file);
