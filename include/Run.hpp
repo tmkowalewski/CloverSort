@@ -1,36 +1,38 @@
 #ifndef RUN_HPP
 #define RUN_HPP
 
-#include <TString.h>
+// Standard C++ includes
+
+// ROOT includes
 #include <TFile.h>
 #include <TTree.h>
-#include "HistogramManager.hpp"
+
+// Project includes
+
+// Forward declarations
+class HistogramManager;
 
 class Run
 {
 
 public:
     // Default Constructor
-    Run(Int_t run_number, TString file_name, TString tree_name, TString run_description, TString run_type);
+    Run(UInt_t run_number, const std::string &file_name, const std::string &tree_name, const std::string &run_description, const std::string &run_type);
 
     // Getters
 
-    const Int_t GetRunNumber() const { return run_number_; }
-    const TString &GetDescription() const { return run_description_; }
+    const UInt_t GetRunNumber() const { return run_number_; }
+    const std::string &GetDescription() const { return run_description_; }
     const TFile *GetFile() const { return pfile_; }
-    const TString &GetFileName() const { return file_name_; }
-    const TTree *GetTree() const { return ptree_; }
+    const std::string &GetFileName() const { return file_name_; }
+    TTree *GetTree() const { return ptree_; }
     const TFile *GetHistFile() const { return phist_file_; }
 
     // Setters
 
-    void SetRunNumber(const int run_number) { run_number_ = run_number; }
-    void SetFile(TFile *file);
-    void SetFile(const TString &file_name);
-    void SetTree(TTree *tree);
-
+    void SetHistManager(HistogramManager *phist_manager);
     void SetHistFile(TFile *phist_file);
-    void SetHistFile(const TString &hist_file_name);
+    void SetHistFile(const std::string &hist_file_name);
 
     // Methods
     void CreateHistogramManager();
@@ -41,15 +43,16 @@ public:
     virtual ~Run();
 
 private:
-    Int_t run_number_;            // Run number, unique identifier for the run
-    TString run_description_;     // Name of the run, can be empty if not specified
-    TString run_type_;            // Type of the run, can be empty if not specified
-    TString file_name_;           // Name of the file associated with this run
-    TString tree_name_;           // Name of the TTree associated with this run as defined by MVME
-    TString hist_file_name_;      // Name of the histogram file associated with this run
-    TFile *pfile_ = nullptr;      // Pointer to the ROOT file associated with this run
-    TTree *ptree_ = nullptr;      // Pointer to the ROOT tree associated with this run
-    TFile *phist_file_ = nullptr; // Pointer to the ROOT file for histograms, if applicable
+    const UInt_t run_number_;                   // Run number, unique identifier for the run
+    const std::string run_description_;         // Name of the run, can be empty if not specified
+    const std::string run_type_;                // Type of the run, can be empty if not specified
+    const std::string file_name_;               // Name of the file associated with this run
+    const std::string tree_name_;               // Name of the TTree associated with this run as defined by MVME
+    std::string hist_file_name_;                // Name of the histogram file associated with this run
+    TFile *pfile_ = nullptr;                    // Pointer to the ROOT file associated with this run
+    TTree *ptree_ = nullptr;                    // Pointer to the ROOT tree associated with this run
+    TFile *phist_file_ = nullptr;               // Pointer to the ROOT file for histograms, if applicable
+    HistogramManager *phist_manager_ = nullptr; // Pointer to the HistogramManager for this run
 };
 
 #endif // RUN_HPP

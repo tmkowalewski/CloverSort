@@ -1,7 +1,14 @@
+// Standard C++ includes
 #include <iostream>
+#include <string>
+
+// ROOT includes
+#include <TString.h>
+
+// Project includes
 #include "Detector.hpp"
 
-Detector::Detector(TString name, TString type, std::vector<Int_t> channels, DAQModule *pdaq_module)
+Detector::Detector(const std::string &name, const std::string &type, std::vector<UInt_t> channels, DAQModule *pdaq_module)
     : name_(name), type_(type), channels_(channels), pdaq_module_(pdaq_module)
 {
 }
@@ -16,9 +23,9 @@ void Detector::PrintInfo() const
     TString channel_list;
     for (Size_t i = 0; i < channels_.size(); ++i)
     {
-        channel_list += (TString)std::to_string(channels_[i]);
+        channel_list += std::to_string(channels_[i]);
         if (i != channels_.size() - 1)
-            channel_list += ",";
+            channel_list += ',';
     }
-    std::cout << Form("%s (%s) [%s]", name_.Data(), type_.Data(), channel_list.Data()) << std::endl;
+    std::cout << Form("%s (%s) [%s]", name_.c_str(), type_.c_str(), channel_list.Data()) << std::endl;
 }

@@ -1,70 +1,82 @@
 #include "Event.hpp"
 #include "DAQModule.hpp"
+#include "Detector.hpp"
 
-Event::Event(std::vector<DAQModule *> daq_modules, TTreeReader *ptree_reader)
-    : ptree_reader_(ptree_reader),
-      daq_modules_(daq_modules)
+Event::Event(Experiment *pexperiment, TTreeReader *ptree_reader)
+    : pexperiment_(pexperiment), ptree_reader_(ptree_reader)
 {
-    for (DAQModule *pmodule : daq_modules_)
-    {
-        for (const TString &filter : pmodule->GetFilters())
-        {
-            try
-            {
-                AddArray(pmodule, filter, ptree_reader);
-            }
-            catch (const std::bad_variant_access &)
-            {
-                // Handle the case where the variant type is not TTreeReaderArray<Double_t>
-                // This can happen if the filter is not an array type
-                AddValue(pmodule, filter, ptree_reader);
-            }
-        }
-    }
 }
 
 Event::~Event()
 {
 }
 
-const Double_t Event::GetData(DAQModule *pdaq_module, const TString &filter, Int_t channel)
+Double_t Event::GetData(std::string owner, std::string filter, UInt_t index)
 {
-    auto it = data_.find(pdaq_module);
-    if (it == data_.end())
+    // Use .find() to safely search for the owner map
+    auto owner_it = data_.find(owner);
+    if (owner_it == data_.end())
     {
-        throw std::runtime_error("DAQModule not found in data map");
+        throw std::out_of_range("Owner '" + owner + "' not found in Event data map.");
     }
-    auto jt = it->second.find(filter);
-    if (jt == it->second.end())
+
+    // Use .find() to safely search for the filter within the owner's map
+    auto filter_it = owner_it->second.find(filter);
+    if (filter_it == owner_it->second.end())
     {
-        throw std::runtime_error("Filter not found in data map for the specified DAQModule");
+        throw std::out_of_range("Filter '" + filter + "' not found for owner '" + owner + "'.");
     }
-    return std::visit([&](auto &reader)
-                      {
-        using T = std::decay_t<decltype(reader)>;
-        if constexpr (std::is_same_v<T, TTreeReaderArray<Double_t>>) {
-            return reader.At(channel);
-        } else if constexpr (std::is_same_v<T, TTreeReaderValue<Double_t>>) {
-            return *reader;
-        } else {
-            throw std::runtime_error("Unsupported ReaderVar type");
-        } }, jt->second);
+
+    // Now it is safe to get a reference to the variant
+    ReaderVar &reader_var = filter_it->second;
+    if (std::holds_alternative<TTreeReaderArray<Double_t>>(reader_var))
+    {
+        TTreeReaderArray<Double_t> &array = std::get<TTreeReaderArray<Double_t>>(reader_var);
+        if (index < array.GetSize())
+        {
+            return array[index];
+        }
+        else
+        {
+            throw std::out_of_range("Index out of range for TTreeReaderArray.");
+        }
+    }
+    else if (std::holds_alternative<TTreeReaderValue<Double_t>>(reader_var))
+    {
+        if (index != 0)
+        {
+            throw std::out_of_range("Index must be 0 for TTreeReaderValue.");
+        }
+        TTreeReaderValue<Double_t> &value = std::get<TTreeReaderValue<Double_t>>(reader_var);
+        return *value;
+    }
+    else
+    {
+        // This case should ideally not be reached if the map is populated correctly
+        throw std::invalid_argument("Variant holds an unexpected type.");
+    }
 }
 
-void Event::AddArray(DAQModule *pmodule, const TString &filter, TTreeReader *ptree_reader)
+void Event::AddDataArray(std::string owner, std::string filter)
 {
-    // Names in the TTree are "module_name.filter_name", but this is redundant
-    // since the module name is already part of the DAQModule object.
-    // So we can just use filter directly as the name for the TTreeReaderArray,
-    // but we still need to grab module_name.filter_name from the TTree.
-    data_[pmodule].insert_or_assign(filter, TTreeReaderArray<Double_t>(*ptree_reader, pmodule->GetName() + "." + filter));
+    // Use emplace on the outer map to get an iterator to the inner map.
+    auto inner_map_it = data_.emplace(owner, std::unordered_map<std::string, ReaderVar>()).first;
+
+    // Now, emplace the TTreeReaderArray into the inner map using piecewise construction.
+    TString branch_name = Form("%s.%s", owner.c_str(), filter.c_str());
+    inner_map_it->second.emplace(std::piecewise_construct,
+                                 std::forward_as_tuple(filter),
+                                 std::forward_as_tuple(std::in_place_type<TTreeReaderArray<Double_t>>, *ptree_reader_, branch_name.Data()));
 }
 
-void Event::AddValue(DAQModule *pmodule, const TString &filter, TTreeReader *ptree_reader)
+void Event::AddDataValue(std::string owner, std::string filter)
 {
-    // Names in the TTree are "module_name.filter_name", but this is redundant
-    // since the module name is already part of the DAQModule object.
-    // So we can just use filter directly as the name for the TTreeReaderArray,
-    // but we still need to grab module_name.filter_name from the TTree.
-    data_[pmodule].insert_or_assign(filter, TTreeReaderValue<Double_t>(*ptree_reader, pmodule->GetName() + "." + filter));
+    // Use emplace on the outer map to get an iterator to the inner map.
+    auto inner_map_it = data_.emplace(owner, std::unordered_map<std::string, ReaderVar>()).first;
+
+    // Now, emplace the TTreeReaderValue into the inner map using piecewise construction.
+    TString branch_name = Form("%s.%s", owner.c_str(), filter.c_str());
+    inner_map_it->second.emplace(std::piecewise_construct,
+                                 std::forward_as_tuple(filter),
+                                 std::forward_as_tuple(std::in_place_type<TTreeReaderValue<Double_t>>, *ptree_reader_, branch_name.Data()));
 }

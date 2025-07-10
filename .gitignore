@@ -36,5 +36,8 @@ bin/
 
 # Editor Enviornment
 .vscode/
+*.code-workspace
 examples/
 legacy/
+hists/
+peaks/

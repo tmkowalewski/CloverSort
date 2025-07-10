@@ -1,22 +1,41 @@
 #ifndef HISTOGRAM_MANAGER_HPP
 #define HISTOGRAM_MANAGER_HPP
 
+// Standard C++ includes
 #include <vector>
-#include <map>
+#include <string>
+#include <unordered_map>
+
+// ROOT includes
 #include <TH1D.h>
 #include <ROOT/TThreadedObject.hxx>
 
-// Forward declarations
+// Project includes
 
+// Forward declarations
 class Experiment;
 class DAQModule;
 class Detector;
 
+struct HistKey
+{
+    std::string module;
+    std::string detector;
+    std::string filter;
+    UInt_t index;
+
+    bool operator==(const HistKey &other) const
+    {
+        return std::tie(module, detector, filter, index) ==
+               std::tie(other.module, other.detector, other.filter, other.index);
+    }
+};
+
 class HistogramManager
 {
 public:
-    using HistogramMap = std::map<std::vector<TString>, std::vector<ROOT::TThreadedObject<TH1D> *>>;
-    using HistogramPtrMap = std::map<std::vector<TString>, std::vector<std::shared_ptr<TH1D>>>;
+    using HistogramMap = std::unordered_map<std::string, std::unordered_map<std::string, std::unordered_map<UInt_t, ROOT::TThreadedObject<TH1D> *>>>;
+    using HistogramPtrMap = std::unordered_map<std::string, std::unordered_map<std::string, std::unordered_map<UInt_t, std::shared_ptr<TH1D>>>>;
 
     // Constructors
 
@@ -27,19 +46,16 @@ public:
     ~HistogramManager();
 
     // Getters
-    const HistogramMap &getHistograms() const { return histogram_map_; }
-    const TString &GetName() const { return name_; }
+    const HistogramMap &GetHistograms() const { return histogram_map_; }
+    const std::string &GetName() const { return name_; }
 
     // Setters
-
-    void SetName(const TString &name) { name_ = name; }
 
     // Methods
 
     void InitFromExperiment(Experiment *experiment);
 
-    void AddHistogram(const TString &name, const TString &title, const Int_t nbinsx, const Double_t &xlow, const Double_t &xup, std::vector<TString> &histogram_path);
-    void RemoveHistogram(const std::vector<TString> &histogram_path, const TString &name);
+    void AddHistogram(const std::string &name, const std::string &title, const Int_t nbinsx, const Double_t &xlow, const Double_t &xup, const std::string &owner, const std::string &filter, const UInt_t index = 0);
 
     HistogramPtrMap MakeHistPtrMap();
 
@@ -48,7 +64,7 @@ public:
     void PrintInfo();
 
 private:
-    TString name_;
+    const std::string name_;
     HistogramMap histogram_map_; // Map of histograms managed by this class
 };
 

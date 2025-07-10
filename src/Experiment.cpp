@@ -1,60 +1,35 @@
+// Standard C++ includes
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+
+// ROOT includes
+#include <TString.h>
+
+// Project includes
 #include "Experiment.hpp"
 #include "DAQModule.hpp"
 #include "Detector.hpp"
 #include "Run.hpp"
-
-// Helpers
-
-std::vector<Int_t> parseNumberString(const TString &number_string)
-{
-    std::vector<Int_t> numbers;
-    std::istringstream iss(number_string.Data());
-    std::string token;
-
-    while (std::getline(iss, token, ','))
-    {
-        // Check if the token is a range
-        size_t dash_pos = token.find('-');
-        if (dash_pos != std::string::npos)
-        {
-            // Range detected
-            Int_t start = std::stoi(token.substr(0, dash_pos));
-            Int_t end = std::stoi(token.substr(dash_pos + 1));
-            for (Int_t i = start; i <= end; ++i)
-            {
-                numbers.push_back(i);
-            }
-        }
-        else
-        {
-            // Single number
-            numbers.push_back(std::stoi(token));
-        }
-    }
-    return numbers;
-}
+#include "Utilities.hpp"
 
 // Constructor
-Experiment::Experiment(const TString file_name)
+Experiment::Experiment(const std::string &file_name)
     : file_name_(file_name),
       daq_modules_(), runs_()
 {
     // Set the file and check if it exists
-    std::ifstream config_file(file_name.Data());
+    std::ifstream config_file(file_name);
     if (!config_file.is_open())
     {
-        throw std::runtime_error(
-            std::string("Could not open configuration file: ") + file_name.Data());
+        throw std::runtime_error(Form("Could not open configuration file: %s", file_name_.c_str()));
 
         return;
     }
 
-    std::cout << "CloverSort [INFO]: Defining Experiment from configuration file " << file_name.Data() << std::endl;
+    std::cout << "CloverSort [INFO]: Defining Experiment from configuration file " << file_name_.c_str() << std::endl;
 
     // Read the configuration file
     std::string line;
@@ -85,6 +60,8 @@ Experiment::Experiment(const TString file_name)
         }
         std::istringstream iss(trimmed_line);
 
+        // std::cout << "CloverSort [INFO]: Processing line: " << trimmed_line << std::endl;
+
         // Handle Experiment definition
         if (current_section == "Experiment")
         {
@@ -99,8 +76,10 @@ Experiment::Experiment(const TString file_name)
                 value = value.substr(valStart);
             if (option == "Name")
             {
-                name_ = TString(value);
+                name_ = value.c_str();
+                std::cout << "CloverSort [INFO]: Setting Experiment name to " << name_ << std::endl;
             }
+            std::cout << "CloverSort [INFO]: Setting Experiment name to " << name_ << std::endl;
             // Other options (e.g. FilenamePattern) can be parsed similarly.
         }
         // Handle Module definitions
@@ -117,7 +96,7 @@ Experiment::Experiment(const TString file_name)
                 throw std::runtime_error("Unsupported module type: " + module_type);
             }
             // Create a DAQModule object and parse filters
-            DAQModule *pmodule = new DAQModule(module_name, module_type);
+            DAQModule *pmodule = new DAQModule(module_name.c_str(), module_type.c_str());
             std::string filter;
             while (iss >> filter)
             {
@@ -128,7 +107,7 @@ Experiment::Experiment(const TString file_name)
                 else
                 {
                     // Add the filter to the module
-                    pmodule->AddFilter(filter);
+                    pmodule->AddFilter(filter.c_str());
                 }
             }
             // Add the module to the list of DAQ modules
@@ -143,12 +122,12 @@ Experiment::Experiment(const TString file_name)
                 continue;
 
             // Parse the channels, which are given as a range like 0-3 or comma separated like 0,1,2,3
-            std::vector<Int_t> detector_channels_parsed = parseNumberString(detector_channels);
+            std::vector<UInt_t> detector_channels_parsed = Utilities::parseNumberString(detector_channels.c_str());
             // Find the DAQModule this detector belongs to
             DAQModule *pdaq_module = nullptr;
             for (DAQModule *pmodule : daq_modules_)
             {
-                if (pmodule->GetName() == detector_module)
+                if ((std::string)pmodule->GetName() == detector_module)
                 {
                     pdaq_module = pmodule;
                     break;
@@ -157,7 +136,7 @@ Experiment::Experiment(const TString file_name)
             // Create a Detector object and add it to the appropriate DAQModule
             if (!daq_modules_.empty())
             {
-                Detector *pdetector = new Detector(detector_name, detector_type, detector_channels_parsed, pdaq_module);
+                Detector *pdetector = new Detector(detector_name.c_str(), detector_type.c_str(), detector_channels_parsed, pdaq_module);
                 pdaq_module->AddDetector(pdetector);
             }
         }
@@ -184,9 +163,9 @@ Experiment::Experiment(const TString file_name)
             if (!(iss >> run_numbers >> run_description >> run_type >> tree_name))
                 continue;
 
-            std::vector<Int_t> run_numbers_parsed = parseNumberString(run_numbers);
+            std::vector<UInt_t> run_numbers_parsed = Utilities::parseNumberString(run_numbers.c_str());
 
-            for (Int_t run_number : run_numbers_parsed)
+            for (UInt_t run_number : run_numbers_parsed)
             {
                 std::string file_name;
                 if (!run_filename_pattern.empty() && run_filename_pattern.find("---") != std::string::npos)
@@ -201,13 +180,13 @@ Experiment::Experiment(const TString file_name)
                     file_name = run_filename_pattern;
                 }
 
-                Run *prun = new Run(run_number, run_description, run_type, file_name, tree_name);
+                Run *prun = new Run(run_number, run_description.c_str(), run_type.c_str(), file_name.c_str(), tree_name.c_str());
                 runs_.push_back(prun);
             }
         }
     }
 
-    std::cout << "CloverSort [INFO]: Experiment " << name_.Data() << " defined successfully." << std::endl;
+    std::cout << "CloverSort [INFO]: Experiment " << name_ << " defined successfully." << std::endl;
 
     PrintInfo();
 }
@@ -218,7 +197,7 @@ Experiment::~Experiment()
     // Clean up resources if needed
 }
 
-const DAQModule *Experiment::GetDAQModule(const TString &module_name) const
+const DAQModule *Experiment::GetDAQModule(const std::string &module_name) const
 {
     auto it = std::find_if(daq_modules_.begin(), daq_modules_.end(),
                            [&](const DAQModule *m)
@@ -228,7 +207,7 @@ const DAQModule *Experiment::GetDAQModule(const TString &module_name) const
     return nullptr;
 }
 
-const Run *Experiment::GetRun(const Int_t run_number) const
+const Run *Experiment::GetRun(const UInt_t run_number) const
 {
     auto it = std::find_if(runs_.begin(), runs_.end(),
                            [run_number](const Run *run)
@@ -241,7 +220,7 @@ void Experiment::AddDAQModule(DAQModule *module)
     daq_modules_.push_back(module);
 }
 
-void Experiment::RemoveDAQModule(const TString &module_name)
+void Experiment::RemoveDAQModule(const std::string &module_name)
 {
     auto it = std::remove_if(daq_modules_.begin(), daq_modules_.end(),
                              [module_name](const DAQModule *pmodule)
@@ -257,7 +236,7 @@ void Experiment::AddRun(Run *run)
     runs_.push_back(run);
 }
 
-void Experiment::RemoveRun(const Int_t run_number)
+void Experiment::RemoveRun(const UInt_t run_number)
 {
     auto it = std::remove_if(runs_.begin(), runs_.end(),
                              [run_number](const Run *prun)
@@ -270,7 +249,7 @@ void Experiment::RemoveRun(const Int_t run_number)
 
 void Experiment::PrintInfo() const
 {
-    std::cout << Form("Experiment %s (%s)", name_.Data(), file_name_.Data()) << std::endl;
+    std::cout << Form("Experiment %s (%s)", name_.c_str(), file_name_.c_str()) << std::endl;
 
     // DAQ Modules
     std::cout << "├── Modules" << std::endl;
