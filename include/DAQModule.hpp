@@ -1,8 +1,8 @@
 #ifndef DAQMODULE_HPP
 #define DAQMODULE_HPP
 
-#define DAQ_BINS 65536    // 16-bit digitizer
-#define DAQ_BINS2NS 0.098 // 0.098 ns/bin (when binned in 16-bit time spectrum)
+#define DAQ_BINS 65536    // 16-bit digitizer. Defined in DAQModule.hpp.
+#define DAQ_BINS2NS 0.098 // 0.098 ns/bin (when binned in 16-bit time spectrum). Defined in DAQModule.hpp.
 #define VALID_MODULE_TYPES {"mdpp16scp", "mdpp16qdc"}
 
 // Standard C++ includes

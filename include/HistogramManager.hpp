@@ -34,8 +34,17 @@ struct HistKey
 class HistogramManager
 {
 public:
-    using HistogramMap = std::unordered_map<std::string, std::unordered_map<std::string, std::unordered_map<UInt_t, ROOT::TThreadedObject<TH1D> *>>>;
-    using HistogramPtrMap = std::unordered_map<std::string, std::unordered_map<std::string, std::unordered_map<UInt_t, std::shared_ptr<TH1D>>>>;
+    // Typedefs
+
+    typedef std::unordered_map<std::string,
+                               std::unordered_map<std::string,
+                                                  std::unordered_map<UInt_t, ROOT::TThreadedObject<TH1D> *>>>
+        HistogramMap;
+
+    typedef std::unordered_map<std::string,
+                               std::unordered_map<std::string,
+                                                  std::unordered_map<UInt_t, std::shared_ptr<TH1D>>>>
+        HistogramPtrMap;
 
     // Constructors
 

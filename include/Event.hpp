@@ -33,7 +33,8 @@ public:
 
     // Getters
 
-    Double_t GetData(std::string owner, std::string filter, UInt_t index);
+    Double_t GetData(std::string owner, std::string filter, UInt_t index = 0);
+    Experiment *GetExperiment() const { return pexperiment_; }
 
     // Setters
 

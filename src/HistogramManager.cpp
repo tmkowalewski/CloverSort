@@ -86,7 +86,7 @@ void HistogramManager::AddHistogram(const std::string &name, const std::string &
 
 HistogramManager::HistogramPtrMap HistogramManager::MakeHistPtrMap()
 {
-    HistogramPtrMap hist_ptr_map;
+    HistogramManager::HistogramPtrMap hist_ptr_map;
 
     for (const auto &owner_pair : histogram_map_)
     {

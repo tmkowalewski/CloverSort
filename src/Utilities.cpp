@@ -69,4 +69,5 @@ namespace Utilities
             std::cout << "=";
         std::cout << "] 100% (" << totalEntries << "/" << totalEntries << ")\n";
     }
+
 } // namespace Utilities

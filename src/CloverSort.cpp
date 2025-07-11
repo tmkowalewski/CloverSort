@@ -28,7 +28,8 @@ int main(int argc, char *argv[])
         for (auto run : Expt.GetRuns())
         {
             HistogramManager hist_manager(&Expt);
-            Sort::sortRun(Expt, *run);
+            hist_manager.PrintInfo();
+            Sort::sortRun(Expt, *run, hist_manager);
         }
 
         return 0;
