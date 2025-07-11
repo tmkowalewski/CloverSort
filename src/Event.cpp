@@ -1,3 +1,11 @@
+// Standard C++ includes
+
+// ROOT includes
+#include <TTreeReader.h>
+#include <TObjArray.h>
+
+// Project includes
+#include "Experiment.hpp"
 #include "Event.hpp"
 #include "DAQModule.hpp"
 #include "Detector.hpp"
@@ -5,6 +13,24 @@
 Event::Event(Experiment *pexperiment, TTreeReader *ptree_reader)
     : pexperiment_(pexperiment), ptree_reader_(ptree_reader)
 {
+    for (const auto &pdaq_module : pexperiment->GetDAQModules())
+    {
+        auto module_name = pdaq_module->GetName();
+
+        // Create module-specific histograms (e.g., module_timestamp)
+        for (const auto &filter : pdaq_module->GetFilters())
+        {
+
+            if (filter == "module_timestamp")
+            {
+                AddDataValue(module_name, filter);
+            }
+            else
+            {
+                AddDataArray(module_name, filter);
+            }
+        }
+    }
 }
 
 Event::~Event()
@@ -48,7 +74,7 @@ Double_t Event::GetData(std::string owner, std::string filter, UInt_t index)
             throw std::out_of_range("Index must be 0 for TTreeReaderValue.");
         }
         TTreeReaderValue<Double_t> &value = std::get<TTreeReaderValue<Double_t>>(reader_var);
-        return *value;
+        return *value.Get();
     }
     else
     {
@@ -79,4 +105,27 @@ void Event::AddDataValue(std::string owner, std::string filter)
     inner_map_it->second.emplace(std::piecewise_construct,
                                  std::forward_as_tuple(filter),
                                  std::forward_as_tuple(std::in_place_type<TTreeReaderValue<Double_t>>, *ptree_reader_, branch_name.Data()));
+}
+
+void Event::PrintInfo() const
+{
+    std::cout << "Event Data:" << std::endl;
+    for (const auto &owner_pair : data_)
+    {
+        std::cout << "Owner: " << owner_pair.first << std::endl;
+        for (const auto &filter_pair : owner_pair.second)
+        {
+            std::cout << "  Filter: " << filter_pair.first << std::endl;
+            if (std::holds_alternative<TTreeReaderArray<Double_t>>(filter_pair.second))
+            {
+                const auto &array = std::get<TTreeReaderArray<Double_t>>(filter_pair.second);
+                std::cout << "    Type: TTreeReaderArray, Size: " << array.GetSize() << std::endl;
+            }
+            else if (std::holds_alternative<TTreeReaderValue<Double_t>>(filter_pair.second))
+            {
+                auto &value = std::get<TTreeReaderValue<Double_t>>(filter_pair.second);
+                std::cout << "    Type: TTreeReaderValue, Value: " << const_cast<TTreeReaderValue<Double_t> &>(value).Get() << std::endl;
+            }
+        }
+    }
 }

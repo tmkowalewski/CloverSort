@@ -77,9 +77,7 @@ Experiment::Experiment(const std::string &file_name)
             if (option == "Name")
             {
                 name_ = value.c_str();
-                std::cout << "CloverSort [INFO]: Setting Experiment name to " << name_ << std::endl;
             }
-            std::cout << "CloverSort [INFO]: Setting Experiment name to " << name_ << std::endl;
             // Other options (e.g. FilenamePattern) can be parsed similarly.
         }
         // Handle Module definitions

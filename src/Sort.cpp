@@ -18,22 +18,22 @@
 namespace Sort
 {
 
-    void fillRawDataHistograms(Event &event, Experiment &experiment, HistogramManager &hist_man)
+    void fillRawDataHistograms(Event &event, HistogramManager &hist_man)
     {
-        auto hist_ptr_map = hist_man.MakeHistPtrMap();
-        for (const auto &pdaq_module : experiment.GetDAQModules())
-        {
-            for (const auto &filter : pdaq_module->GetFilters())
-            {
-                if ((std::string)filter == "module_timestamp" || (std::string)filter == "trigger_time")
-                {
-                }
-            }
-        }
+    }
+
+    void fillEnergyHistograms(Event &event, Experiment &experiment, HistogramManager &hist_man)
+    {
+    }
+
+    void fillAddbackHistograms(Event &event, Experiment &experiment, HistogramManager &hist_man)
+    {
     }
 
     void sortRun(Experiment &experiment, Run &run)
     {
+        // Setup
+        ROOT::EnableImplicitMT(std::thread::hardware_concurrency() - 2);
 
         // Setup the TTreeProcessorMT to process the run's tree
         ROOT::TTreeProcessorMT tree_processor(run.GetFileName(), run.GetTree()->GetName());
@@ -45,12 +45,15 @@ namespace Sort
         auto sortTask = [&](TTreeReader &event_reader)
         {
             // Initialize
+            Event event(&experiment, &event_reader);
 
             // Event Loop
+            while (event_reader.Next())
+            {
+                processedEntries++;
+            }
 
             // Finalize
-
-            processedEntries++;
         };
 
         // Process the tree

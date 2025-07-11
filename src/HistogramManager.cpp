@@ -15,9 +15,9 @@ HistogramManager::HistogramManager()
     // Constructor implementation
 }
 
-HistogramManager::HistogramManager(Experiment *experiment)
+HistogramManager::HistogramManager(Experiment *pexperiment)
 {
-    InitFromExperiment(experiment);
+    InitFromExperiment(pexperiment);
 }
 
 HistogramManager::~HistogramManager()
@@ -25,9 +25,9 @@ HistogramManager::~HistogramManager()
     // Destructor implementation
 }
 
-void HistogramManager::InitFromExperiment(Experiment *experiment)
+void HistogramManager::InitFromExperiment(Experiment *pexperiment)
 {
-    for (const auto &pdaq_module : experiment->GetDAQModules())
+    for (const auto &pdaq_module : pexperiment->GetDAQModules())
     {
         auto module_name = pdaq_module->GetName();
 

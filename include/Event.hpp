@@ -42,6 +42,8 @@ public:
     void AddDataArray(std::string owner, std::string filter);
     void AddDataValue(std::string owner, std::string filter);
 
+    void PrintInfo() const;
+
 private:
     Experiment *pexperiment_;   // Pointer to the Experiment object
     TTreeReader *ptree_reader_; // Pointer to the TTreeReader for reading data
