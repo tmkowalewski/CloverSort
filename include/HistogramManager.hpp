@@ -17,20 +17,6 @@ class Experiment;
 class DAQModule;
 class Detector;
 
-struct HistKey
-{
-    std::string module;
-    std::string detector;
-    std::string filter;
-    UInt_t index;
-
-    bool operator==(const HistKey &other) const
-    {
-        return std::tie(module, detector, filter, index) ==
-               std::tie(other.module, other.detector, other.filter, other.index);
-    }
-};
-
 class HistogramManager
 {
 public:
