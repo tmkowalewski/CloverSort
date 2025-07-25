@@ -15,6 +15,7 @@ namespace Utilities
     std::vector<UInt_t> parseNumberString(const std::string &number_string);
 
     void displayProgressBar(std::atomic<ULong64_t> &processedEntries, ULong64_t totalEntries);
+
 }
 
 #endif // UTILITIES_HPP

@@ -3,6 +3,7 @@
 #include <string>
 
 // ROOT includes
+#include <TFile.h>
 
 // Project includes
 #include "HistogramManager.hpp"
@@ -109,6 +110,43 @@ HistogramManager::HistogramPtrMap HistogramManager::MakeHistPtrMap()
     }
 
     return hist_ptr_map;
+}
+
+void HistogramManager::MergeHistograms()
+{
+    for (auto &[owner_key, filter_map] : histogram_map_)
+    {
+        for (auto &[filter_key, index_map] : filter_map)
+        {
+            for (auto &[index, hist] : index_map)
+            {
+                if (hist)
+                {
+                    hist->Merge();
+                }
+            }
+        }
+    }
+}
+
+void HistogramManager::WriteHistsToFile(const std::string &file_name)
+{
+    TFile *file = TFile::Open(file_name.c_str(), "RECREATE");
+
+    for (const auto &[owner_key, filter_map] : histogram_map_)
+    {
+        for (const auto &[filter_key, index_map] : filter_map)
+        {
+            for (const auto &[index, hist] : index_map)
+            {
+                if (hist)
+                {
+                    hist->Get()->Write();
+                }
+            }
+        }
+    }
+    file->Close();
 }
 
 void HistogramManager::PrintInfo()

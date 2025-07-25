@@ -54,7 +54,9 @@ public:
 
     HistogramPtrMap MakeHistPtrMap();
 
-    void WriteHistsToFile(TFile *file);
+    void MergeHistograms();
+
+    void WriteHistsToFile(const std::string &file_name);
 
     void PrintInfo();
 

@@ -29,7 +29,12 @@ int main(int argc, char *argv[])
         {
             HistogramManager hist_manager(&Expt);
             hist_manager.PrintInfo();
+
             Sort::sortRun(Expt, *run, hist_manager);
+
+            hist_manager.MergeHistograms();
+            hist_manager.WriteHistsToFile(Form("run_%i.root", run->GetRunNumber()));
+            std::cout << "CloverSort [INFO]: Finished processing run " << run->GetRunNumber() << std::endl;
         }
 
         return 0;

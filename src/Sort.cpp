@@ -26,12 +26,12 @@ namespace Sort
             const auto module_name = pmodule->GetName();
 
             // Module Timestamp Histogram
-            const auto module_timestamp = event.GetData(module_name, "module_timestamp") * DAQ_BINS2NS; // Convert module timestamp to nanoseconds
+            const auto module_timestamp = event.GetData(module_name, "module_timestamp") * DAQ_BINS2NS; // Convert module timestamp to ns
             hist_ptr_map[module_name]["module_timestamp"][0]->Fill(module_timestamp);
 
             // Trigger Time Histograms
-            const auto trigger_time0 = event.GetData(module_name, "trigger_time", 0) * DAQ_BINS2NS; // Convert trigger time to nanoseconds
-            const auto trigger_time1 = event.GetData(module_name, "trigger_time", 1) * DAQ_BINS2NS; // Convert trigger time to nanoseconds
+            const auto trigger_time0 = event.GetData(module_name, "trigger_time", 0) * DAQ_BINS2NS; // Convert trigger time to ns
+            const auto trigger_time1 = event.GetData(module_name, "trigger_time", 1) * DAQ_BINS2NS; // Convert trigger time to ns
             hist_ptr_map[module_name]["trigger_time"][0]->Fill(trigger_time0);
             hist_ptr_map[module_name]["trigger_time"][1]->Fill(trigger_time1);
 
