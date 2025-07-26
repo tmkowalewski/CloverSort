@@ -133,19 +133,41 @@ void HistogramManager::WriteHistsToFile(const std::string &file_name)
 {
     TFile *file = TFile::Open(file_name.c_str(), "RECREATE");
 
-    for (const auto &[owner_key, filter_map] : histogram_map_)
+    for (const auto &owner_pair : histogram_map_)
     {
-        for (const auto &[filter_key, index_map] : filter_map)
+        const auto &owner_key = owner_pair.first;
+        const auto &filter_map = owner_pair.second;
+
+        // Create (or cd into) an owner directory
+        TDirectory *owner_dir = file->mkdir(owner_key.c_str());
+        owner_dir->cd();
+
+        for (const auto &filter_pair : filter_map)
         {
-            for (const auto &[index, hist] : index_map)
+            const auto &filter_key = filter_pair.first;
+            const auto &index_map = filter_pair.second;
+
+            // Create (or cd into) a filter directory under the owner
+            TDirectory *filter_dir = gDirectory->mkdir(filter_key.c_str());
+            filter_dir->cd();
+
+            for (const auto &index_pair : index_map)
             {
-                if (hist)
+                auto *hist = index_pair.second;
+                if (hist && hist->Get())
                 {
                     hist->Get()->Write();
                 }
             }
+
+            // Go back to the owner directory
+            owner_dir->cd();
         }
+
+        // Go back to the file root for the next owner
+        file->cd();
     }
+
     file->Close();
 }
 

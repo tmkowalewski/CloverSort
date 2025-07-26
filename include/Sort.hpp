@@ -20,7 +20,8 @@ namespace Sort
     void fillRawDataHistograms(Event &event, HistogramManager::HistogramPtrMap &hist_ptr_map);
 
     // Function to sort a run
-    void sortRun(Experiment &experiment, Run &run, HistogramManager &hist_man);
+    // Valid Modes are "all", "raw", "calibrated", "energy", "addback".
+    void sortRun(Experiment &experiment, Run &run, HistogramManager &hist_man, std::string mode = "all");
 
 }
 

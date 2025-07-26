@@ -23,14 +23,14 @@ int main(int argc, char *argv[])
         }
 
         // Define the experiment from the configuration file
-        Experiment Expt = Experiment(argv[1]);
+        Experiment expt = Experiment(argv[1]);
 
-        for (auto run : Expt.GetRuns())
+        for (auto run : expt.GetRuns())
         {
-            HistogramManager hist_manager(&Expt);
+            HistogramManager hist_manager(&expt);
             hist_manager.PrintInfo();
 
-            Sort::sortRun(Expt, *run, hist_manager);
+            Sort::sortRun(expt, *run, hist_manager, "raw");
 
             hist_manager.MergeHistograms();
             hist_manager.WriteHistsToFile(Form("run_%i.root", run->GetRunNumber()));

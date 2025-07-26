@@ -1,10 +1,10 @@
 // Standard C++ includes
 #include <atomic>
 #include <thread>
+#include <chrono>
 
 // ROOT includes
 #include <ROOT/TTreeProcessorMT.hxx>
-#include <TStopwatch.h>
 
 // Project includes
 #include "Sort.hpp"
@@ -72,17 +72,16 @@ namespace Sort
     {
     }
 
-    void sortRun(Experiment &experiment, Run &run, HistogramManager &hist_man)
+    void sortRun(Experiment &experiment, Run &run, HistogramManager &hist_man, std::string mode)
     {
         // Setup
-        ROOT::EnableImplicitMT(std::thread::hardware_concurrency() - 2);
+        ROOT::EnableImplicitMT(std::thread::hardware_concurrency() - 1);
 
         // Setup the TTreeProcessorMT to process the run's tree
         ROOT::TTreeProcessorMT tree_processor(run.GetFileName(), run.GetTree()->GetName());
 
         // Setup the progress bar and timer
         std::atomic<ULong64_t> processedEntries(0);
-        TStopwatch timer;
 
         auto sortTask = [&](TTreeReader &event_reader)
         {
@@ -93,7 +92,36 @@ namespace Sort
             // Event Loop
             while (event_reader.Next())
             {
-                fillRawDataHistograms(event, hist_ptr_map);
+                switch (Utilities::str2int(mode.c_str())) // Compare using a hash function for string to int conversion
+                {
+                case Utilities::str2int("all"):
+                    fillRawDataHistograms(event, hist_ptr_map);
+                    fillEnergyHistograms(event, experiment, hist_ptr_map);
+                    fillAddbackHistograms(event, experiment, hist_ptr_map);
+                    break;
+
+                case Utilities::str2int("raw"):
+                    fillRawDataHistograms(event, hist_ptr_map);
+                    break;
+
+                case Utilities::str2int("calibrated"):
+                    fillEnergyHistograms(event, experiment, hist_ptr_map);
+                    fillAddbackHistograms(event, experiment, hist_ptr_map);
+                    break;
+
+                case Utilities::str2int("energy"):
+                    fillEnergyHistograms(event, experiment, hist_ptr_map);
+                    break;
+
+                case Utilities::str2int("addback"):
+                    fillAddbackHistograms(event, experiment, hist_ptr_map);
+                    break;
+
+                default:
+                    throw std::invalid_argument("Invalid mode specified for run sorting: " + mode);
+                    break;
+                }
+
                 processedEntries++;
             }
 
@@ -101,16 +129,18 @@ namespace Sort
         };
 
         // Process the tree
-        std::cout << "CloverSort [INFO]: Processing run " << run.GetRunNumber() << " with " << run.GetTree()->GetEntries() << " entries." << std::endl;
-        timer.Start();
-        std::thread progressbar_thread(Utilities::displayProgressBar, std::ref(processedEntries), run.GetTree()->GetEntries());
+        std::cout << std::string(100, '-') << std::endl;
+        std::cout << Form("CloverSort [INFO]: Processing Run %i with %lli entries in mode %s...", run.GetRunNumber(), run.GetTree()->GetEntries(), mode.c_str()) << std::endl;
+        auto start_time = std::chrono::high_resolution_clock::now();
+        std::thread progressbar_thread(Utilities::displayProgressBar, std::ref(processedEntries), run.GetTree()->GetEntries(), start_time);
         tree_processor.Process(sortTask);
 
         // Finish processing
-        timer.Stop();
         progressbar_thread.join();
-        std::cout << "Processed events in " << timer.RealTime() << " seconds ("
-                  << static_cast<double>(processedEntries) / timer.RealTime()
+        auto end_time = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end_time - start_time;
+        std::cout << "Processed events in " << elapsed.count() << " seconds ("
+                  << static_cast<double>(processedEntries) / elapsed.count()
                   << " events/second)" << std::endl;
 
         // Merge the histograms

@@ -14,7 +14,12 @@ namespace Utilities
 
     std::vector<UInt_t> parseNumberString(const std::string &number_string);
 
-    void displayProgressBar(std::atomic<ULong64_t> &processedEntries, ULong64_t totalEntries);
+    void displayProgressBar(std::atomic<ULong64_t> &processed_entries, ULong64_t total_entries, std::chrono::_V2::system_clock::time_point start_time);
+
+    constexpr unsigned int str2int(const char *str, int h = 0)
+    {
+        return !str[h] ? 5381 : (str2int(str, h + 1) * 33) ^ str[h];
+    }
 
 }
 
